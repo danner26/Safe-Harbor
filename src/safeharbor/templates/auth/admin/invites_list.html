@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Invites · Admin · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 960px; margin: 40px auto; padding: 0 20px;">
+  <p class="eyebrow">Admin</p>
+  <h1 style="font-family: var(--font-display); font-size: 32px; font-weight: 600; margin: 0 0 24px;">Invites</h1>
+
+  <div class="card" style="padding: 24px; margin-bottom: 24px;">
+    <h2 style="font-size: 18px; margin: 0 0 12px;">Issue new invite</h2>
+    <form method="post" style="display: flex; gap: 12px; align-items: flex-end;">
+      {{ form.csrf_token }}
+      <div class="field" style="flex: 1;">
+        {{ form.email.label }}
+        {{ form.email(class_="input") }}
+        {% if form.email.errors %}
+          {% for e in form.email.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+        {% endif %}
+      </div>
+      {{ form.submit(class_="btn btn-primary") }}
+    </form>
+  </div>
+
+  <div class="card" style="padding: 0; margin-bottom: 24px; overflow: hidden;">
+    <h2 style="font-size: 18px; margin: 0; padding: 16px 24px; border-bottom: 1px solid var(--border);">Active</h2>
+    {% if active %}
+      <table class="tbl">
+        <thead><tr><th>Email</th><th>Issued</th><th>Expires</th><th></th></tr></thead>
+        <tbody>
+          {% for inv in active %}
+            <tr>
+              <td>{{ inv.email }}</td>
+              <td>{{ inv.issued_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td>{{ inv.expires_at.strftime('%Y-%m-%d %H:%M') }}{% if inv.expires_at <= now %} (expired){% endif %}</td>
+              <td style="text-align: right;">
+                <a class="btn btn-ghost btn-sm" href="{{ url_for('auth.admin_invite_detail', invite_id=inv.id) }}">Details</a>
+                <form method="post" action="{{ url_for('auth.admin_invite_revoke', invite_id=inv.id) }}" style="display: inline; margin: 0;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-ghost btn-sm" type="submit">Revoke</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted" style="padding: 24px;">No active invites.</p>
+    {% endif %}
+  </div>
+
+  <div class="card" style="padding: 0; overflow: hidden;">
+    <h2 style="font-size: 18px; margin: 0; padding: 16px 24px; border-bottom: 1px solid var(--border);">Recent (consumed or revoked)</h2>
+    {% if consumed %}
+      <table class="tbl">
+        <thead><tr><th>Email</th><th>Issued</th><th>Resolved</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for inv in consumed %}
+            <tr>
+              <td>{{ inv.email }}</td>
+              <td>{{ inv.issued_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td>{{ inv.consumed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td>
+                {% if inv.consumed_by %}
+                  <span class="badge badge-success">Redeemed</span>
+                {% else %}
+                  <span class="badge badge-muted">Revoked</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted" style="padding: 24px;">No consumed invites yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

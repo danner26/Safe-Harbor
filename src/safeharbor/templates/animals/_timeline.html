@@ -1,0 +1,46 @@
+{%- set labels = {
+  'acquired': 'Acquired',
+  'moved': 'Moved',
+  'deceased': 'Deceased',
+  'health_note': 'Health note',
+  'observation': 'Observation',
+} -%}
+{%- set markers = {
+  'acquired': 'A',
+  'moved': 'M',
+  'deceased': 'D',
+  'health_note': 'N',
+  'observation': 'O',
+} -%}
+
+<div style="display: flex; flex-direction: column; gap: 12px;">
+  {% for row in events %}
+    {% set tank = tank_by_id.get(row.tank_id) if row.tank_id else none %}
+    {# No-tank events use current_tank for display; historical tank may differ. #}
+    {% set timestamp_tank = tank if tank else (current_tank if current_tank is defined else none) %}
+    <article class="animal-event animal-event-{{ row.event_type }}" style="display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start;">
+      <div aria-hidden="true" style="width: 32px; height: 32px; border-radius: 999px; display: grid; place-items: center; font-size: 12px; font-weight: 700; background: var(--accent-subtle); color: var(--accent-subtle-on);">
+        {{ markers.get(row.event_type, '?') }}
+      </div>
+      <div style="border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap;">
+          <strong>{{ labels.get(row.event_type, row.event_type | replace('_', ' ') | title) }}</strong>
+          <time class="muted" datetime="{{ row.occurred_at.isoformat() }}" style="font-size: 13px;">
+            {% if timestamp_tank %}{{ row.occurred_at | tank_local(timestamp_tank, fmt="short") }}{% else %}{{ row.occurred_at.isoformat() }}{% endif %}
+          </time>
+        </div>
+        {% if tank %}
+          <div style="margin-top: 8px;"><span class="chip">{{ tank.name }}</span></div>
+        {% endif %}
+        {% if row.note %}
+          <p style="font-size: 14px; margin: 8px 0 0;">{{ row.note }}</p>
+        {% endif %}
+        {% if row.logged_by_display %}
+          <div class="muted animal-event-attribution" style="font-size: 13px; margin-top: 4px;">{{ row.logged_by_display }}</div>
+        {% endif %}
+      </div>
+    </article>
+  {% else %}
+    <p class="muted" style="margin: 0;">No lifecycle events yet.</p>
+  {% endfor %}
+</div>

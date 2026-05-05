@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, empty_state %}
+{% block title %}{{ tank.name }} · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 32px auto; padding: 0 20px;">
+  <p class="eyebrow"><a href="{{ url_for('tanks.list_tanks') }}" class="link">← Tanks</a></p>
+
+  {% if tank.decommission_date %}
+    <div class="card" style="padding: 14px 20px; margin-bottom: 16px; border-left: 3px solid var(--warning); background: var(--warning-subtle);">
+      <strong>Decommissioned</strong> on {{ tank.decommission_date.strftime('%Y-%m-%d') }}.
+    </div>
+  {% endif %}
+
+
+  <header class="card" style="padding: 24px; margin-bottom: 16px;">
+    <div style="display: grid; grid-template-columns: 160px 1fr; gap: 20px; align-items: start;">
+      {% if tank.image_path %}
+        <img
+          src="{{ url_for('tanks.serve_image', tank_id=tank.id) }}"
+          alt="{{ tank.name }} photo"
+          style="width: 160px; aspect-ratio: 1; object-fit: cover; border-radius: 8px;"
+        >
+      {% else %}
+        <div class="tphoto {% if tank.water_type == 'salt' %}salt{% elif tank.water_type == 'brackish' %}brackish{% else %}fresh{% endif %}" aria-hidden="true" style="width: 160px; aspect-ratio: 1;"></div>
+      {% endif %}
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+          {%- set _wt_labels = {'salt': 'Saltwater', 'fresh': 'Freshwater', 'brackish': 'Brackish'} -%}
+          <span class="chip chip-{% if tank.water_type == 'salt' %}salt{% elif tank.water_type == 'brackish' %}brackish{% else %}fresh{% endif %}">{{ _wt_labels.get(tank.water_type, tank.water_type | title) }}</span>
+          <span class="muted" style="font-size: 13px;">· {{ tank_profile_label }}</span>
+          {{ status_badge('tank', health.rollup) }}
+        </div>
+        <details class="health-details" style="margin-top: 8px;">
+          <summary class="muted" style="cursor: pointer; font-size: 13px;">Why this status?</summary>
+          <ul style="margin: 8px 0 0; padding-left: 18px; font-size: 13px;">
+            {% for p in health.by_parameter %}
+              <li><strong>{{ p.display_name }}:</strong> {{ p.band }}{% if p.latest_value is not none %} — {{ p.latest_value }} {{ p.latest_unit_code }} <span class="muted">({{ p.recorded_at_utc | tank_local(tank, fmt="short") }})</span>{% endif %}</li>
+            {% endfor %}
+          </ul>
+        </details>
+        <h1 style="font-family: var(--font-display); font-size: 32px; font-weight: 600; margin: 0;">{{ tank.name }}</h1>
+        <p class="muted" style="margin: 4px 0 0; font-size: 14px;">
+          {% if tank.volume_liters is not none %}{%- set v = display_volume(tank.volume_liters) -%}{{ v[0] }} {{ v[1] }}{% else %}No volume set{% endif %}
+          {% if tank.setup_date %} · Set up {{ tank.setup_date.strftime('%Y-%m-%d') }}{% endif %}
+          {% if tank.substrate %} · {{ tank.substrate }}{% endif %}
+        </p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <a href="{{ url_for('tanks.edit', tank_id=tank.id) }}" class="btn btn-outline btn-sm">Edit</a>
+        {% include "tanks/_decommission_button.html" %}
+      </div>
+    </div>
+    </div>
+  </header>
+
+  {% include "measurements/_kpi_strip.html" with context %}
+
+  <div class="card" style="padding: 24px; margin-bottom: 16px;">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h2 style="font-size: 18px; margin: 0;">Recent measurements</h2>
+      <a href="{{ url_for('tanks.history', tank_id=tank.id) }}" style="color: var(--accent); font-size: 13px; font-weight: 500;">Full history</a>
+    </header>
+    {% with rows=recent, show_tank_column=False %}
+      {% include "measurements/_recent_table.html" with context %}
+    {% endwith %}
+    <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+      <a href="{{ url_for('measurements.quick_add_get', tank=tank.id) }}" class="btn btn-primary btn-sm">Log a reading</a>
+      <a href="{{ url_for('measurements.batch_get', tank=tank.id) }}" class="btn btn-outline btn-sm">Batch entry</a>
+    </div>
+  </div>
+
+  <div class="card" style="padding: 24px; margin-bottom: 16px;">
+    <header style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;">
+      <h2 style="font-size: 18px; margin: 0;">Trend</h2>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <select id="chart-parameter" class="input" style="min-width: 140px;">
+          {% for key, label in chart_parameters %}
+            <option value="{{ key }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+        <select id="chart-range" class="input" style="min-width: 110px;">
+          <option value="24h">24 h</option>
+          <option value="7d" selected>7 d</option>
+          <option value="30d">30 d</option>
+          <option value="1y">1 y</option>
+        </select>
+      </div>
+    </header>
+    <div id="trend-chart" style="min-height: 280px;"></div>
+  </div>
+
+  {% if tank.equipment_notes %}
+    <div class="card" style="padding: 24px; margin-bottom: 16px;">
+      <h2 style="font-size: 18px; margin: 0 0 12px;">Equipment notes</h2>
+      {{ tank.equipment_notes | markdown }}
+    </div>
+  {% endif %}
+
+  {% include "animals/_inhabitants.html" with context %}
+</div>
+<script src="{{ url_for('static', filename='vendor/plotly/plotly.js-cartesian.min.js') }}"></script>
+<script>
+  (function () {
+    const mount = document.getElementById("trend-chart");
+    const paramSel = document.getElementById("chart-parameter");
+    const rangeSel = document.getElementById("chart-range");
+    if (!mount || !paramSel || !rangeSel) return;
+
+    async function refresh() {
+      const parameter = encodeURIComponent(paramSel.value);
+      const range = encodeURIComponent(rangeSel.value);
+      const baseUrl = {{ url_for('tanks.chart_data', tank_id=tank.id) | tojson }};
+      const url = baseUrl + `?parameter=${parameter}&range=${range}`;
+      const response = await fetch(url, { credentials: "same-origin" });
+      if (!response.ok) {
+        mount.innerHTML = '<p class="muted">Could not load chart.</p>';
+        return;
+      }
+      const payload = await response.json();
+      if (!payload.data || payload.data.length === 0) {
+        mount.innerHTML = '<p class="muted">No readings in this range yet.</p>';
+        return;
+      }
+      const x = payload.data.map((point) => point.recorded_at_local);
+      const y = payload.data.map((point) => parseFloat(point.value));
+      Plotly.newPlot(
+        mount,
+        [{ x, y, mode: "lines+markers", type: "scatter" }],
+        { margin: { t: 20, l: 50, r: 20, b: 50 }, height: 280 },
+        { displayModeBar: false, responsive: true }
+      );
+    }
+
+    paramSel.addEventListener("change", refresh);
+    rangeSel.addEventListener("change", refresh);
+    refresh();
+  })();
+</script>
+{% endblock %}

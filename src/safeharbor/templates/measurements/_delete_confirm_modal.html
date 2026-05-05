@@ -1,0 +1,48 @@
+{% from "_macros.html" import display_measurement_value %}
+{% set modal_id = "delete-measurement-" ~ measurement.id %}
+<div
+  class="modal measurement-delete-modal"
+  id="{{ modal_id }}"
+  tabindex="-1"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="{{ modal_id }}-title"
+>
+  <div class="modal-dialog">
+    <form
+      method="post"
+      action="{{ url_for('measurements.delete_post', measurement_id=measurement.id) }}"
+      class="modal-content"
+      hx-post="{{ url_for('measurements.delete_post', measurement_id=measurement.id) }}"
+      hx-target="closest tr"
+      hx-swap="outerHTML"
+    >
+      <input name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+      <div class="modal-header">
+        <h2 class="modal-title fs-5" id="{{ modal_id }}-title">Delete reading</h2>
+        <a href="#" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></a>
+      </div>
+      <div class="modal-body">
+        <p>Delete this measurement?</p>
+        <dl style="margin: 0;">
+          <dt>Recorded at</dt>
+          <dd>{{ measurement.recorded_at | tank_local(row_tank if row_tank is defined else tank, fmt="default") }}</dd>
+          <dt>Parameter</dt>
+          <dd>{{ pt_display.get(measurement.parameter_type_id, 'Unknown') }}</dd>
+          <dt>Value</dt>
+          <dd>
+            {{ display_measurement_value(measurement, pt_unit, unit_display_by_id) }}
+          </dd>
+          {% if measurement.note %}
+            <dt>Note</dt>
+            <dd>{{ measurement.note }}</dd>
+          {% endif %}
+        </dl>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class="btn btn-outline btn-sm" data-bs-dismiss="modal">Cancel</a>
+        <button type="submit" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Delete</button>
+      </div>
+    </form>
+  </div>
+</div>

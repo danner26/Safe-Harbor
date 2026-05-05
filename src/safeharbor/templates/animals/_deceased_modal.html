@@ -1,0 +1,47 @@
+{% if deceased_form %}
+  <div
+    class="modal fade"
+    id="deceased-modal"
+    tabindex="-1"
+    aria-labelledby="deceased-modal-title"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <form
+        method="post"
+        action="{{ url_for('animals.mark_deceased', animal_id=animal.id) }}"
+        class="modal-content"
+      >
+        {{ deceased_form.csrf_token }}
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="deceased-modal-title">Mark deceased</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted" style="margin-bottom: 16px;">
+            Confirm the deceased quantity for {{ animal.name or animal.species }}.
+          </p>
+          <div class="field">
+            <label for="deceased-quantity" class="field-label">Quantity</label>
+            {{ deceased_form.quantity(id="deceased-quantity", class_="input", min="1", inputmode="numeric", required=True) }}
+            {% for e in deceased_form.quantity.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+          </div>
+          <div class="field">
+            <label for="deceased-occurred-at" class="field-label">Occurred at</label>
+            {{ deceased_form.occurred_at(id="deceased-occurred-at", class_="input", required=True) }}
+            {% for e in deceased_form.occurred_at.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+          </div>
+          <div class="field">
+            <label for="deceased-note" class="field-label">Note</label>
+            {{ deceased_form.note(id="deceased-note", class_="input", rows="3", placeholder="Optional note") }}
+            {% for e in deceased_form.note.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger btn-sm">Mark deceased</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endif %}

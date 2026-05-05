@@ -1,0 +1,26 @@
+{% if tank.decommission_date %}
+  <form
+    method="post"
+    action="{{ url_for('tanks.restore_tank', tank_id=tank.id) }}"
+    hx-post="{{ url_for('tanks.restore_tank', tank_id=tank.id) }}"
+    hx-target="this"
+    hx-swap="outerHTML"
+    style="display: inline; margin: 0;"
+  >
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-ghost btn-sm" type="submit">Restore</button>
+  </form>
+{% else %}
+  <form
+    method="post"
+    action="{{ url_for('tanks.decommission_tank', tank_id=tank.id) }}"
+    hx-post="{{ url_for('tanks.decommission_tank', tank_id=tank.id) }}"
+    hx-target="this"
+    hx-swap="outerHTML"
+    onsubmit='return confirm({{ ("Decommission " ~ tank.name ~ "? It will move to the Decommissioned filter and stop appearing on the dashboard.") | tojson }});'
+    style="display: inline; margin: 0;"
+  >
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-outline btn-sm" type="submit">Decommission</button>
+  </form>
+{% endif %}

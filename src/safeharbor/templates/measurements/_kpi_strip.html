@@ -1,0 +1,25 @@
+{# Inputs:
+   kpi_cards: prepared KPI card display data
+#}
+<div class="kpi-grid">
+  {% for card in kpi_cards %}
+    {%- set value = "&mdash;" | safe if card.display_value is none else card.display_value -%}
+    <div class="kpi-card">
+      <div class="kpi-label">{{ card.label }}</div>
+      <div class="kpi-value">
+        <span class="kpi-num">{{ value }}</span>
+        {%- if card.display_unit %}<span class="kpi-unit">{{ card.display_unit }}</span>{% endif -%}
+      </div>
+      {%- set status = card.range_status -%}
+      {% include "measurements/_range_badge.html" %}
+      {%- if card.trend %}
+        <div class="kpi-trend kpi-trend-{{ card.trend }}" aria-label="{{ card.trend }}">
+          {%- if card.trend == 'up' -%}&#x2191;
+          {%- elif card.trend == 'down' -%}&#x2193;
+          {%- else -%}&#x2192;
+          {%- endif -%}
+        </div>
+      {%- endif %}
+    </div>
+  {% endfor %}
+</div>

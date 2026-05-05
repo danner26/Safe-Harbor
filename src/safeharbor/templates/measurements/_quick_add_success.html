@@ -1,0 +1,26 @@
+<div class="card"
+     style="padding: 16px 18px; margin-top: 16px; border-left: 4px solid var(--success); background: var(--success-subtle);"
+     role="status"
+     aria-live="polite">
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div>
+      <strong>Logged.</strong>
+      <span>{{ parameter.display_name }} {{ value }} {{ unit_code }} for {{ tank.name }}</span>
+      <div class="muted" style="font-size: 13px; margin-top: 2px;">
+        {{ recorded_at | tank_local(tank, fmt="default") }}
+      </div>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+      <button type="button"
+              class="btn btn-secondary"
+              hx-on:click="document.getElementById('quick-add-form').reset(); document.getElementById('qa-success-region').innerHTML = '';">
+        Log another
+      </button>
+      <a href="{{ url_for('tanks.detail', tank_id=tank.id) }}"
+         class="btn btn-primary"
+         target="_top">
+        View on tank
+      </a>
+    </div>
+  </div>
+</div>

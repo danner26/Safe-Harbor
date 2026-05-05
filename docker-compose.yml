@@ -1,0 +1,76 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: safeharbor
+      POSTGRES_PASSWORD: safeharbor
+      POSTGRES_DB: safeharbor
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "safeharbor"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: safeharbor:dev
+    env_file: .env
+    environment:
+      FLASK_CONFIG: development
+      DATABASE_URL: postgresql+psycopg://safeharbor:safeharbor@postgres:5432/safeharbor
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    volumes:
+      - uploads:/data/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  worker:
+    image: safeharbor:dev
+    env_file: .env
+    environment:
+      FLASK_CONFIG: development
+      DATABASE_URL: postgresql+psycopg://safeharbor:safeharbor@postgres:5432/safeharbor
+      REDIS_URL: redis://redis:6379/0
+    command: ["rq", "worker", "--url", "redis://redis:6379/0", "default"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    profiles: ["dev"]
+    ports:
+      - "8025:8025"  # web UI
+      - "1025:1025"  # SMTP
+
+volumes:
+  pgdata:
+  uploads:

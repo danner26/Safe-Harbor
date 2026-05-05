@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Create account · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="auth-shell" style="min-height: calc(100vh - 56px); display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+  <div style="width: 100%; max-width: 420px;">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <img src="{{ url_for('static', filename='images/SafeHarborLogo.svg') }}" alt="" style="height: 64px; margin-bottom: 12px;">
+      <div style="font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: -0.01em;">Safe Harbor</div>
+      <div class="muted" style="font-size: 13px; margin-top: 4px;">Create a Safe Harbor account</div>
+    </div>
+    <div class="card" style="padding: 28px;">
+      {% if error %}
+        <p class="muted" style="text-align: center;">{{ error }}</p>
+        <p style="text-align: center; margin-top: 16px;">
+          <a href="{{ url_for('auth.login') }}" class="link">Back to login</a>
+        </p>
+      {% else %}
+        <form method="post" style="display: flex; flex-direction: column; gap: 14px;">
+          {{ form.csrf_token }}
+          <div class="field">
+            <label>Email</label>
+            <input class="input" value="{{ email }}" readonly disabled>
+          </div>
+          <div class="field">
+            {{ form.username.label }} <span class="muted">(optional)</span>
+            {{ form.username(class_="input", autocomplete="nickname") }}
+            {% if form.username.errors %}
+              {% for e in form.username.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+            {% endif %}
+          </div>
+          <div class="field">
+            {{ form.password.label }}
+            {{ form.password(class_="input", autocomplete="new-password") }}
+            <span class="help">At least 10 characters.</span>
+            {% if form.password.errors %}
+              {% for e in form.password.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+            {% endif %}
+          </div>
+          <div class="field">
+            {{ form.confirm.label }}
+            {{ form.confirm(class_="input", autocomplete="new-password") }}
+            {% if form.confirm.errors %}
+              {% for e in form.confirm.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+            {% endif %}
+          </div>
+          {{ form.submit(class_="btn btn-primary btn-block btn-lg") }}
+          <hr class="hr">
+          <a href="{{ url_for('auth.login') }}" style="text-align: center; font-size: 13px; color: var(--accent);">Back to login</a>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

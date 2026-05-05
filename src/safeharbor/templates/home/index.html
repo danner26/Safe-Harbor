@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+
+{% block title %}Dashboard · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 32px 40px;">
+
+  {# ── Page header ──────────────────────────────────────────────────────── #}
+  <header style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px; flex-wrap: wrap;">
+    <div>
+      <p class="eyebrow">Dashboard</p>
+      <h1 style="margin: 0 0 6px; font-family: var(--font-display); font-size: 36px; font-weight: 600; letter-spacing: -0.015em;">
+        Good morning.
+      </h1>
+      <p class="muted" style="margin: 0; font-size: 17px; max-width: 540px;">
+        {% if tanks %}{{ tanks | length }} active tank{% if tanks | length != 1 %}s{% endif %} on deck. Recent readings appear below as you log them.{% else %}Add a tank to start logging readings and trends.{% endif %}
+      </p>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <a href="{{ url_for('tanks.new_tank') }}" class="btn btn-outline">Add tank</a>
+      <a href="{{ url_for('measurements.quick_add_get') }}" class="btn btn-primary">Log a reading</a>
+    </div>
+  </header>
+
+  {# ── KPI strip — wired to most-recent tank's latest_per_parameter ────── #}
+  {% include "measurements/_kpi_strip.html" with context %}
+
+  {# Alert banner deliberately omitted — zero unacked alerts for Phase 1a.
+     Phase 1c will conditionally render when real alert query returns results. #}
+
+  {# ── Tank grid ────────────────────────────────────────────────────────── #}
+  <section style="margin-top: 28px; margin-bottom: 32px;">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h2 style="margin: 0; font-family: var(--font-display); font-size: 24px; font-weight: 600;">Your tanks</h2>
+      <a href="{{ url_for('tanks.list_tanks') }}" style="color: var(--accent); font-size: 14px; font-weight: 500;">View all</a>
+    </header>
+    {% if tanks %}
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+        {% for tank in tanks %}
+          <article class="card" style="overflow: hidden;">
+            <div class="tphoto {% if tank.water_type == 'salt' %}salt{% elif tank.water_type == 'brackish' %}brackish{% else %}fresh{% endif %}"></div>
+            <div style="padding: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span class="chip chip-{% if tank.water_type == 'salt' %}salt{% elif tank.water_type == 'brackish' %}brackish{% else %}fresh{% endif %}">{{ tank.water_type | title }}</span>
+                <span title="{% for p in health_by_tank_id[tank.id].by_parameter %}{{ p.display_name }}: {{ p.band }}{% if not loop.last %}; {% endif %}{% endfor %}">{{ status_badge('tank', health_by_tank_id[tank.id].rollup) }}</span>
+              </div>
+              <h3 style="margin: 6px 0 4px; font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: -0.01em;">
+                <a href="{{ url_for('tanks.detail', tank_id=tank.id) }}" style="color: inherit; text-decoration: none;">{{ tank.name }}</a>
+              </h3>
+              <p class="muted" style="margin: 0; font-size: 13px;">
+                {% if tank.volume_liters is not none %}
+                  {%- set v = display_volume(tank.volume_liters) -%}
+                  {{ v[0] }} {{ v[1] }}
+                {% else %}No volume set{% endif %}
+              </p>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card" style="padding: 48px; text-align: center;">
+        <p style="font-size: 17px; margin: 0 0 12px;">No tanks yet</p>
+        <p class="muted" style="font-size: 14px; margin: 0 0 20px;">Get started by adding your first aquarium.</p>
+        <a href="{{ url_for('tanks.new_tank') }}" class="btn btn-primary">Add your first tank</a>
+      </div>
+    {% endif %}
+  </section>
+
+  {# ── Recent alerts empty state ────────────────────────────────────────── #}
+  <section style="margin-bottom: 32px;">
+    <article class="card" style="padding: 20px;">
+      <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h3 style="margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 600;">Recent alerts</h3>
+      </header>
+      <div style="padding: 32px 0 28px; text-align: center;">
+        <p style="margin: 0; font-size: 14px; font-weight: 500;">Alerts will appear here when they're set up.</p>
+        <p class="muted" style="margin: 4px 0 0; font-size: 12px;">(Phase 3)</p>
+      </div>
+    </article>
+  </section>
+
+  {# ── Recent measurements (across tanks) ───────────────────────────────── #}
+  <section>
+    <header style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <h2 style="margin: 0; font-family: var(--font-display); font-size: 24px; font-weight: 600;">Recent measurements</h2>
+    </header>
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <div style="padding: 20px;">
+        {% with rows=recent, show_tank_column=True %}
+          {% include "measurements/_recent_table.html" with context %}
+        {% endwith %}
+      </div>
+    </div>
+  </section>
+
+</div>{# /container #}
+{% endblock %}

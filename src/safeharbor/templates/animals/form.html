@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == "add" %}Add animal{% else %}Edit animal{% endif %} · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 760px; margin: 32px auto; padding: 0 20px;">
+  <p class="eyebrow"><a href="{{ url_for('animals.list_animals') }}" class="link">← Animals</a></p>
+  <h1 style="font-family: var(--font-display); font-size: 28px; font-weight: 600; margin: 0 0 24px;">
+    {% if mode == "add" %}Add animal{% else %}Edit animal{% endif %}
+  </h1>
+
+  <form method="post" action="{% if mode == 'edit' %}{{ url_for('animals.edit_animal', animal_id=animal.id) }}{% else %}{{ url_for('animals.new_animal') }}{% endif %}">
+    {{ form.hidden_tag() }}
+    <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+      {% for e in form.form_errors %}<div class="help" style="color: var(--danger);">{{ e }}</div>{% endfor %}
+
+      <div class="field">
+        {{ form.name.label }}
+        {{ form.name(class_="input", autofocus=true, placeholder="Optional nickname") }}
+        {% for e in form.name.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ form.species.label }}
+        {{ form.species(class_="input", placeholder="e.g. Ocellaris clownfish") }}
+        {% for e in form.species.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ form.scientific_name.label }}
+        {{ form.scientific_name(class_="input", placeholder="Optional") }}
+        {% for e in form.scientific_name.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="field">
+          {{ form.sex.label }}
+          {{ form.sex(class_="input") }}
+          {% for e in form.sex.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+        </div>
+        {% if mode == "add" %}
+          <div class="field">
+            {{ form.acquired_quantity.label }}
+            {{ form.acquired_quantity(class_="input", inputmode="numeric", min="1") }}
+            {% for e in form.acquired_quantity.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      {% if mode == "add" %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="field">
+            {{ form.tank_id.label }}
+            {{ form.tank_id(class_="input") }}
+            {% for e in form.tank_id.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+          </div>
+          <div class="field">
+            {{ form.acquired_at.label }}
+            {{ form.acquired_at(class_="input", type="datetime-local") }}
+            {% for e in form.acquired_at.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="field">
+        {{ form.notes.label }}
+        {{ form.notes(class_="input", rows=4, placeholder="Care notes, distinguishing marks, behavior") }}
+        {% for e in form.notes.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+      </div>
+
+      {% if mode == "add" %}
+        <div class="field">
+          {{ form.initial_note.label }}
+          {{ form.initial_note(class_="input", placeholder="Optional timeline note for the acquisition") }}
+          {% for e in form.initial_note.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <div style="display: flex; gap: 8px; margin-top: 16px;">
+      <button type="submit" class="btn btn-primary">{% if mode == "add" %}Add animal{% else %}Save changes{% endif %}</button>
+      <a href="{% if mode == 'edit' %}{{ url_for('animals.detail_animal', animal_id=animal.id) }}{% else %}{{ url_for('animals.list_animals') }}{% endif %}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+
+  {% if mode == "edit" and animal and image_form %}
+    <section class="card" style="padding: 24px; margin-top: 24px;">
+      <h2 style="font-family: var(--font-display); font-size: 20px; font-weight: 600; margin: 0 0 16px;">Animal photo</h2>
+
+      {% if animal.image_path %}
+        <img
+          src="{{ url_for('animals.serve_image', animal_id=animal.id) }}"
+          alt="{% if animal.name %}{{ animal.name }}{% else %}{{ animal.species }}{% endif %} photo"
+          style="display: block; width: 100%; max-height: 320px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;"
+        >
+      {% endif %}
+
+      <form method="post" action="{{ url_for('animals.upload_image', animal_id=animal.id) }}" enctype="multipart/form-data">
+        {{ image_form.hidden_tag() }}
+        <div class="field">
+          {{ image_form.image.label }}
+          {{ image_form.image(class_="input", accept=".jpg,.jpeg,.png,.webp,.heic,image/jpeg,image/png,image/webp,image/heic") }}
+          {% for e in image_form.image.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 16px;">
+          <button type="submit" class="btn btn-primary">Upload photo</button>
+        </div>
+      </form>
+
+      {% if animal.image_path %}
+        <form method="post" action="{{ url_for('animals.remove_image', animal_id=animal.id) }}" style="margin-top: 12px;">
+          {{ image_form.hidden_tag() }}
+          <button type="submit" class="btn btn-ghost">Remove photo</button>
+        </form>
+      {% endif %}
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

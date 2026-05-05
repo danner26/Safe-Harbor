@@ -1,0 +1,30 @@
+{% if move_form %}
+  <details class="animal-move-menu" data-action="move" style="position: relative;">
+    <summary class="btn btn-outline btn-sm" style="list-style: none; cursor: pointer;">Move</summary>
+    <form
+      method="post"
+      action="{{ url_for('animals.move_animal', animal_id=animal.id) }}"
+      class="card"
+      style="position: absolute; z-index: 20; min-width: 280px; margin-top: 8px; padding: 12px; display: grid; gap: 10px;"
+    >
+      {{ move_form.csrf_token }}
+      <div class="field" style="margin: 0;">
+        <label for="move-to-tank-id" class="field-label">To tank</label>
+        <select id="move-to-tank-id" name="{{ move_form.to_tank_id.name }}" class="input" required>
+          {% for value, label in move_form.to_tank_id.choices %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field" style="margin: 0;">
+        <label for="move-occurred-at" class="field-label">Occurred at</label>
+        {{ move_form.occurred_at(id="move-occurred-at", class_="input", required=True) }}
+      </div>
+      <div class="field" style="margin: 0;">
+        <label for="move-note" class="field-label">Note</label>
+        {{ move_form.note(id="move-note", class_="input", placeholder="Optional note") }}
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">Move</button>
+    </form>
+  </details>
+{% endif %}

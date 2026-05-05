@@ -1,0 +1,5 @@
+{% if status == "danger" -%}
+  <span class="badge bg-danger" aria-label="Out of safe range">⚠ Out of range</span>
+{%- elif status == "caution" -%}
+  <span class="badge bg-warning text-dark" aria-label="Approaching range bound">⚠ Caution</span>
+{%- endif %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}History - {{ tank.name }} · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 32px auto; padding: 0 20px;">
+  <p class="eyebrow"><a href="{{ url_for('tanks.detail', tank_id=tank.id) }}" class="link">Back to {{ tank.name }}</a></p>
+
+
+  <header style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+    <div>
+      <h1 style="font-family: var(--font-display); font-size: 28px; font-weight: 600; margin: 0;">Measurement history</h1>
+      <p class="muted" style="margin: 4px 0 0; font-size: 14px;">{{ tank.name }} · all logged readings</p>
+    </div>
+
+    <form method="get" action="{{ url_for('tanks.history', tank_id=tank.id) }}" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: end;">
+      <div class="field" style="margin: 0;">
+        <label for="parameter" class="field-label">Parameter</label>
+        <select name="parameter" id="parameter" class="input" style="min-width: 160px;">
+          <option value="">All parameters</option>
+          {% for pt in parameter_types %}
+            <option value="{{ pt.key }}" {% if parameter_key == pt.key %}selected{% endif %}>{{ pt.display_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field" style="margin: 0;">
+        <label for="from" class="field-label">From</label>
+        <input type="date" name="from" id="from" value="{{ from_str or '' }}" class="input">
+      </div>
+      <div class="field" style="margin: 0;">
+        <label for="to" class="field-label">To</label>
+        <input type="date" name="to" id="to" value="{{ to_str or '' }}" class="input">
+      </div>
+      <button type="submit" class="btn btn-outline btn-sm">Filter</button>
+    </form>
+  </header>
+
+  {% if rows %}
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Recorded at</th>
+            <th>Parameter</th>
+            <th class="num">Value</th>
+            <th>Logged by</th>
+            <th>Note</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+            {% include "measurements/_history_row.html" %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; gap: 12px;">
+      <span class="muted">Page {{ page }}</span>
+      <div style="display: flex; gap: 8px;">
+        {% if prev_url %}
+          <a class="btn btn-outline btn-sm" href="{{ prev_url }}">Prev</a>
+        {% endif %}
+        {% if next_url %}
+          <a class="btn btn-outline btn-sm" href="{{ next_url }}">Next</a>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="card" style="padding: 32px; text-align: center;">
+      <p class="muted" style="margin: 0;">No readings match these filters.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

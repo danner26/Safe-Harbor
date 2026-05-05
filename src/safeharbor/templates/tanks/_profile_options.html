@@ -1,0 +1,3 @@
+{% for value, label in profiles -%}
+<option{% if loop.first %} selected{% endif %} value="{{ value }}">{{ label }}</option>
+{% endfor -%}

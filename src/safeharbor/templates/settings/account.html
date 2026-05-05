@@ -1,0 +1,70 @@
+{% extends "settings/_layout.html" %}
+{% block settings_title %}Account settings{% endblock %}
+
+{% block settings_content %}
+<div class="card account-settings-card">
+  <section class="account-settings-row">
+    <div class="account-settings-copy">
+      <h2>Email address</h2>
+      <p class="muted">{{ current_user.email }}</p>
+    </div>
+    <form method="post" action="{{ url_for('settings.account_email') }}" class="account-settings-form">
+      {{ email_form.hidden_tag() }}
+      <label class="field-label" for="{{ email_form.new_email.id }}">{{ email_form.new_email.label.text }}</label>
+      {{ email_form.new_email(class_="input", autocomplete="email", inputmode="email") }}
+      {% for error in email_form.new_email.errors %}
+        <div class="help" style="color: var(--danger);">{{ error }}</div>
+      {% endfor %}
+      <label class="field-label" for="{{ email_form.current_password.id }}">{{ email_form.current_password.label.text }}</label>
+      {{ email_form.current_password(class_="input", autocomplete="current-password") }}
+      {% for error in email_form.current_password.errors %}
+        <div class="help" style="color: var(--danger);">{{ error }}</div>
+      {% endfor %}
+      {{ email_form.submit(class_="btn btn-primary") }}
+    </form>
+  </section>
+
+  <section class="account-settings-row">
+    <div class="account-settings-copy">
+      <h2>Password</h2>
+      <p class="muted">Update the password used to sign in.</p>
+    </div>
+    <form method="post" action="{{ url_for('settings.account_password') }}" class="account-settings-form">
+      {{ password_form.hidden_tag() }}
+      <label class="field-label" for="{{ password_form.current_password.id }}">{{ password_form.current_password.label.text }}</label>
+      {{ password_form.current_password(class_="input", autocomplete="current-password") }}
+      {% for error in password_form.current_password.errors %}
+        <div class="help" style="color: var(--danger);">{{ error }}</div>
+      {% endfor %}
+      <label class="field-label" for="{{ password_form.new_password.id }}">{{ password_form.new_password.label.text }}</label>
+      {{ password_form.new_password(class_="input", autocomplete="new-password") }}
+      {% for error in password_form.new_password.errors %}
+        <div class="help" style="color: var(--danger);">{{ error }}</div>
+      {% endfor %}
+      <label class="field-label" for="{{ password_form.confirm_password.id }}">{{ password_form.confirm_password.label.text }}</label>
+      {{ password_form.confirm_password(class_="input", autocomplete="new-password") }}
+      {% for error in password_form.confirm_password.errors %}
+        <div class="help" style="color: var(--danger);">{{ error }}</div>
+      {% endfor %}
+      {{ password_form.submit(class_="btn btn-primary") }}
+    </form>
+  </section>
+
+  <section class="account-settings-row">
+    <div class="account-settings-copy">
+      <h2>Display name</h2>
+      <p class="muted">Shown in the app header and admin screens.</p>
+    </div>
+    <form method="post" action="{{ url_for('settings.account_display_name') }}" class="account-settings-form">
+      {{ username_form.hidden_tag() }}
+      <label class="field-label" for="{{ username_form.username.id }}">{{ username_form.username.label.text }}</label>
+      {{ username_form.username(class_="input", autocomplete="nickname") }}
+      {% for error in username_form.username.errors %}
+        <div class="help" style="color: var(--danger);">{{ error }}</div>
+      {% endfor %}
+      {{ username_form.submit(class_="btn btn-primary") }}
+    </form>
+  </section>
+</div>
+
+{% endblock %}

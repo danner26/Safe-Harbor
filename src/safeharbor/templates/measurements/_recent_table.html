@@ -1,0 +1,58 @@
+{# Inputs:
+   rows: list of MeasurementDisplayRow
+   pt_display: {pt_id: display_name}
+   pt_unit: {pt_id: canonical unit display}
+   tank_display: {tank_id: tank name}
+   tank_by_id: {tank_id: Tank}
+   show_tank_column: bool
+#}
+{% from "_macros.html" import display_measurement_value %}
+{% if rows %}
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Time</th>
+        {% if show_tank_column %}<th>Tank</th>{% endif %}
+        <th>Parameter</th>
+        <th class="num">Value</th>
+        <th>Logged by</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+        {% set measurement = row.measurement %}
+        {% set row_tank = tank_by_id[measurement.tank_id] %}
+        <tr>
+          <td>{{ measurement.recorded_at | tank_local(row_tank, fmt="short") }}</td>
+          {% if show_tank_column %}<td>{{ tank_display.get(measurement.tank_id, measurement.tank_id) }}</td>{% endif %}
+          <td>{{ pt_display.get(measurement.parameter_type_id, 'Unknown') }}</td>
+          <td class="num">
+            {{ display_measurement_value(measurement, pt_unit, unit_display_by_id) }}
+            {% with status=row.range_status %}
+              {% include "measurements/_range_badge.html" %}
+            {% endwith %}
+          </td>
+          <td>{{ row.logged_by_display }}</td>
+          <td>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <a class="btn btn-outline btn-sm" href="{{ url_for('measurements.edit_get', measurement_id=measurement.id) }}" aria-label="Edit reading">Edit</a>
+              <a
+                href="#delete-measurement-{{ measurement.id }}"
+                class="btn btn-outline btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#delete-measurement-{{ measurement.id }}"
+                aria-label="Delete reading"
+              >
+                Delete
+              </a>
+            </div>
+            {% include "measurements/_delete_confirm_modal.html" %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p class="muted" style="margin: 0;">No readings yet.</p>
+{% endif %}

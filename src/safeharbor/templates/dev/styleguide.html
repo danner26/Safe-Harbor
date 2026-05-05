@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, kpi_card, chart_container, empty_state, numeric_field %}
+
+{% block title %}Styleguide · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: var(--space-6);">
+  <header style="margin-bottom: var(--space-12);">
+    <p class="eyebrow">Internal &middot; /dev/styleguide</p>
+    <h1>Design system styleguide</h1>
+    <p style="font-size: var(--fs-body-lg); color: var(--on-surface-muted);">Every token, every component, every state. Use this as the visual contract for downstream phases.</p>
+  </header>
+
+  {# ===== 01 Color tokens ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">01</span>
+      <h2>Color tokens</h2>
+      <span class="desc">Semantic tokens; same names swap values across light/dark.</span>
+    </div>
+    <div class="card" style="padding: var(--space-5);">
+      <h3 class="sg-subhead">Surface</h3>
+      <div class="swatch-row">
+        <div class="swatch light-fg" style="background: var(--surface); border: 1px solid var(--border);">--surface</div>
+        <div class="swatch light-fg" style="background: var(--surface-elevated); border: 1px solid var(--border);">--surface-elevated</div>
+        <div class="swatch light-fg" style="background: var(--surface-sunken);">--surface-sunken</div>
+      </div>
+      <h3 class="sg-subhead">Foreground</h3>
+      <div class="swatch-row">
+        <div class="swatch" style="background: var(--on-surface);">--on-surface</div>
+        <div class="swatch" style="background: var(--on-surface-muted);">--on-surface-muted</div>
+      </div>
+      <h3 class="sg-subhead">Borders</h3>
+      <div class="swatch-row">
+        <div class="swatch light-fg" style="background: var(--border);">--border</div>
+        <div class="swatch light-fg" style="background: var(--border-strong);">--border-strong</div>
+      </div>
+      <h3 class="sg-subhead">Accent (brand)</h3>
+      <div class="swatch-row">
+        <div class="swatch" style="background: var(--accent);">--accent</div>
+        <div class="swatch" style="background: var(--accent-hover);">--accent-hover</div>
+        <div class="swatch" style="background: var(--accent-active);">--accent-active</div>
+        <div class="swatch light-fg" style="background: var(--accent-subtle);">--accent-subtle</div>
+      </div>
+      <h3 class="sg-subhead">Status</h3>
+      <div class="swatch-row">
+        <div class="swatch" style="background: var(--success);">--success</div>
+        <div class="swatch light-fg" style="background: var(--success-subtle);">--success-subtle</div>
+        <div class="swatch" style="background: var(--warning);">--warning</div>
+        <div class="swatch light-fg" style="background: var(--warning-subtle);">--warning-subtle</div>
+        <div class="swatch" style="background: var(--danger);">--danger</div>
+        <div class="swatch light-fg" style="background: var(--danger-subtle);">--danger-subtle</div>
+        <div class="swatch" style="background: var(--info);">--info</div>
+        <div class="swatch light-fg" style="background: var(--info-subtle);">--info-subtle</div>
+      </div>
+      <h3 class="sg-subhead">Water types</h3>
+      <div class="swatch-row">
+        <div class="swatch" style="background: var(--water-fresh);">--water-fresh</div>
+        <div class="swatch" style="background: var(--water-salt);">--water-salt</div>
+        <div class="swatch" style="background: var(--water-brackish);">--water-brackish</div>
+      </div>
+    </div>
+  </section>
+
+  {# ===== 02 Type scale ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">02</span>
+      <h2>Type scale</h2>
+      <span class="desc">Fluid via clamp() on display/h1/h2; static rem on h3–caption.</span>
+    </div>
+    <div class="card" style="padding: var(--space-5);">
+      <p style="font-family: var(--font-display); font-size: var(--fs-display); font-weight: 600; line-height: var(--lh-tight); margin: 0; color: var(--on-surface);">A steady hand on the tiller.</p>
+      <p style="font-size: var(--fs-caption); color: var(--on-surface-muted); font-family: var(--font-mono); margin: 4px 0 var(--space-3);">display · var(--fs-display)</p>
+      <h1 style="margin: var(--space-5) 0 0;">Recent measurements</h1>
+      <p style="font-size: var(--fs-caption); color: var(--on-surface-muted); font-family: var(--font-mono); margin: 4px 0 var(--space-3);">h1 · var(--fs-h1)</p>
+      <h2 style="margin: 0;">Reef 90 — saltwater</h2>
+      <p style="font-size: var(--fs-caption); color: var(--on-surface-muted); font-family: var(--font-mono); margin: 4px 0 var(--space-3);">h2 · var(--fs-h2)</p>
+      <h3 style="margin: 0;">Salinity drift, last 24 h</h3>
+      <p style="font-size: var(--fs-caption); color: var(--on-surface-muted); font-family: var(--font-mono); margin: 4px 0 var(--space-3);">h3 · var(--fs-h3)</p>
+      <h4 style="margin: 0;">Threshold rules</h4>
+      <p style="font-size: var(--fs-caption); color: var(--on-surface-muted); font-family: var(--font-mono); margin: 4px 0 var(--space-3);">h4 · var(--fs-h4)</p>
+      <p style="margin: 0;">Body — log a reading and the chart will start to fill in.</p>
+      <p style="font-size: var(--fs-caption); color: var(--on-surface-muted); font-family: var(--font-mono); margin: 4px 0 var(--space-3);">body · var(--fs-body)</p>
+      <p style="margin: 0; font-size: var(--fs-body-sm);">Body small — used in cards, table rows, secondary content.</p>
+      <p style="font-size: var(--fs-caption); color: var(--on-surface-muted); font-family: var(--font-mono); margin: 4px 0 var(--space-3);">body-sm · var(--fs-body-sm)</p>
+      <p style="margin: 0; font-size: var(--fs-caption); color: var(--on-surface-muted);">Caption · Added by Daniel · 2 minutes ago</p>
+      <p style="font-size: var(--fs-caption); color: var(--on-surface-muted); font-family: var(--font-mono); margin: 4px 0 var(--space-3);">caption · var(--fs-caption)</p>
+      <p style="margin: 0; font-family: var(--font-mono); font-size: var(--fs-mono);">Mono — 25.4 °C · 1.025 SG · pH 8.21</p>
+      <p style="font-size: var(--fs-caption); color: var(--on-surface-muted); font-family: var(--font-mono); margin: 4px 0 0;">mono · var(--fs-mono)</p>
+    </div>
+  </section>
+
+  {# ===== 03 Spacing scale ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">03</span>
+      <h2>Spacing scale</h2>
+      <span class="desc">Visual ruler — each block is the space step itself wide.</span>
+    </div>
+    <div class="card" style="padding: var(--space-5);">
+      {% for step in [1, 2, 3, 4, 5, 6, 8, 10, 12, 16] %}
+      <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2);">
+        <span style="font-family: var(--font-mono); font-size: 11px; color: var(--on-surface-muted); min-width: 80px;">--space-{{ step }}</span>
+        <div style="height: 16px; width: var(--space-{{ step }}); background: var(--accent); border-radius: 2px;"></div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {# ===== 04 Buttons ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">04</span>
+      <h2>Buttons</h2>
+      <span class="desc">Variants &times; sizes &times; states.</span>
+    </div>
+    <div class="card" style="padding: var(--space-5);">
+      <h3 class="sg-subhead" style="margin-top:0;">Variants (md size)</h3>
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-bottom: var(--space-5);">
+        <button class="btn btn-primary">Log reading</button>
+        <button class="btn btn-outline">Cancel</button>
+        <button class="btn btn-ghost">View history</button>
+        <button class="btn btn-danger">Remove tank</button>
+        <button class="btn btn-warning">Acknowledge</button>
+      </div>
+      <h3 class="sg-subhead">Sizes (btn-primary)</h3>
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-bottom: var(--space-5);">
+        <button class="btn btn-primary btn-sm">Small</button>
+        <button class="btn btn-primary">Medium (default)</button>
+        <button class="btn btn-primary btn-lg">Large</button>
+      </div>
+      <h3 class="sg-subhead">States</h3>
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center;">
+        <button class="btn btn-primary" disabled>Disabled primary</button>
+        <button class="btn btn-outline" disabled>Disabled outline</button>
+      </div>
+    </div>
+  </section>
+
+  {# ===== 05 Form fields ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">05</span>
+      <h2>Form fields</h2>
+      <span class="desc">Including numeric-with-unit (sticky suffix).</span>
+    </div>
+    <div class="card" style="padding: var(--space-5); display: grid; gap: var(--space-4); grid-template-columns: repeat(2, 1fr);">
+      <div class="field">
+        <label for="sg-name" class="field-label">Tank name</label>
+        <input id="sg-name" class="input" value="Reef 90">
+        <div class="help">Free-form text.</div>
+      </div>
+      {{ numeric_field("sg-ph", "pH", ["pH"], value=8.21, help_text="Locale-detected unit.") }}
+      {{ numeric_field("sg-temp", "Temperature", ["°C", "°F"], value=25.4) }}
+      <div class="field field-error">
+        <label class="field-label">Salinity (out of range)</label>
+        <input class="input" value="2.5">
+        <div class="help" style="color: var(--danger);">Salinity should be between 1.020 and 1.030 SG.</div>
+      </div>
+      <div class="field">
+        <label for="sg-notes" class="field-label">Notes</label>
+        <textarea id="sg-notes" class="textarea" rows="3" style="resize: vertical;">Tank looking healthy after water change.</textarea>
+        <div class="help">Optional free-text notes.</div>
+      </div>
+      <div class="field">
+        <label class="field-label">Disabled input</label>
+        <input class="input" value="Cannot edit" disabled>
+      </div>
+    </div>
+  </section>
+
+  {# ===== 06 Status badges ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">06</span>
+      <h2>Status badges</h2>
+      <span class="desc">Friendly labels per decisions.md voice rules.</span>
+    </div>
+    <div class="card" style="padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-4);">
+      <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center;">
+        <span class="muted" style="min-width: 80px; font-size: var(--fs-caption); text-transform: uppercase; letter-spacing: var(--ls-caps);">Tank</span>
+        {{ status_badge("tank", "healthy") }}
+        {{ status_badge("tank", "watch") }}
+        {{ status_badge("tank", "unhealthy") }}
+        {{ status_badge("tank", "stale") }}
+        {{ status_badge("tank", "unknown") }}
+      </div>
+      <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center;">
+        <span class="muted" style="min-width: 80px; font-size: var(--fs-caption); text-transform: uppercase; letter-spacing: var(--ls-caps);">Animal</span>
+        {{ status_badge("animal", "alive") }}
+        {{ status_badge("animal", "deceased") }}
+      </div>
+      <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center;">
+        <span class="muted" style="min-width: 80px; font-size: var(--fs-caption); text-transform: uppercase; letter-spacing: var(--ls-caps);">Alert</span>
+        {{ status_badge("alert", "pending") }}
+        {{ status_badge("alert", "sent") }}
+        {{ status_badge("alert", "failed") }}
+        {{ status_badge("alert", "suppressed") }}
+        {{ status_badge("alert", "acknowledged") }}
+      </div>
+    </div>
+  </section>
+
+  {# ===== 07 Water-type chips ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">07</span>
+      <h2>Water-type chips</h2>
+      <span class="desc">chip-salt, chip-fresh, chip-brackish.</span>
+    </div>
+    <div class="card" style="padding: var(--space-5); display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center;">
+      <span class="chip chip-salt">Saltwater</span>
+      <span class="chip chip-fresh">Freshwater</span>
+      <span class="chip chip-brackish">Brackish</span>
+    </div>
+  </section>
+
+  {# ===== 08 KPI cards ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">08</span>
+      <h2>KPI cards</h2>
+      <span class="desc">kpi-grid with neutral and warning variants.</span>
+    </div>
+    <div class="kpi-grid">
+      {{ kpi_card("Salinity", "1.025", unit="SG", trend="flat") }}
+      {{ kpi_card("pH", "8.21", trend="flat") }}
+      {{ kpi_card("Temperature", "25.4", unit="°C", trend="down") }}
+      {{ kpi_card("Nitrate", "12", unit="ppm", trend="up", status="warning") }}
+    </div>
+  </section>
+
+  {# ===== 09 Empty states ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">09</span>
+      <h2>Empty states</h2>
+      <span class="desc">Various contexts — no tanks, no measurements, no alerts.</span>
+    </div>
+    <div class="sg-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4);">
+      <div class="card" style="padding: var(--space-3);">
+        {{ empty_state("&#x1F4ED;", "No tanks yet", "Create your first tank to start logging readings.", "Create tank", "#tanks/new") }}
+      </div>
+      <div class="card" style="padding: var(--space-3);">
+        {{ empty_state("&#x1F4CA;", "No measurements yet", "Log your first reading and the chart will start to fill in.", "Log a reading", "#quick-add") }}
+      </div>
+      <div class="card" style="padding: var(--space-3);">
+        {{ empty_state("&#x1F514;", "No alerts", "Everything is nominal. Alerts appear here when parameters drift outside your thresholds.", None, None) }}
+      </div>
+    </div>
+  </section>
+
+  {# ===== 10 Chart container ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">10</span>
+      <h2>Chart container</h2>
+      <span class="desc">chart-card with header, subtitle, and segmented range chips.</span>
+    </div>
+    {{ chart_container(
+      "Salinity (last 7 days)",
+      subtitle="Reef 90",
+      chart_id="sg-chart",
+      range_options=[("24h", "24h"), ("7d", "7d"), ("30d", "30d")]
+    ) }}
+  </section>
+
+  {# ===== 11 Tables ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">11</span>
+      <h2>Tables</h2>
+      <span class="desc">.tbl — compact, with sort arrows and status badges.</span>
+    </div>
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Tank</th>
+            <th>Parameter</th>
+            <th style="text-align: right;">Value</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>4 min ago</td>
+            <td>Reef 90</td>
+            <td>Salinity</td>
+            <td class="num">1.025 SG</td>
+            <td>{{ status_badge("tank", "healthy") }}</td>
+          </tr>
+          <tr>
+            <td>22 min ago</td>
+            <td>Planted 40</td>
+            <td>pH</td>
+            <td class="num">6.42</td>
+            <td>{{ status_badge("tank", "watch") }}</td>
+          </tr>
+          <tr>
+            <td>1 h ago</td>
+            <td>Mangrove tide</td>
+            <td>Ammonia</td>
+            <td class="num">0.80 ppm</td>
+            <td>{{ status_badge("tank", "unhealthy") }}</td>
+          </tr>
+          <tr>
+            <td>3 h ago</td>
+            <td>Reef 90</td>
+            <td>Temperature</td>
+            <td class="num">25.4 °C</td>
+            <td>{{ status_badge("tank", "healthy") }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  {# ===== 12 Alerts / flash messages ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">12</span>
+      <h2>Alerts / flash messages</h2>
+      <span class="desc">.alert — success, warning, danger, info variants.</span>
+    </div>
+    <div class="sg-grid" style="gap: var(--space-2);">
+      <div class="alert alert-success" role="alert">All readings nominal. Last sweep finished 4 minutes ago.</div>
+      <div class="alert alert-warning" role="alert">pH drifting low (last 24 h). Currently 7.92, target 8.10–8.40.</div>
+      <div class="alert alert-danger" role="alert">Ammonia above safe range. Check immediately.</div>
+      <div class="alert alert-info" role="alert">Cycling — week 3 of 6. Suppress alerts during cycling completes Apr 30.</div>
+    </div>
+  </section>
+
+  {# ===== 13 Cards ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">13</span>
+      <h2>Cards</h2>
+      <span class="desc">.card variants — basic, with header, with tank photo placeholder.</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4);">
+      <div class="card" style="padding: var(--space-5);">
+        <h3 style="margin: 0 0 var(--space-2);">Basic card</h3>
+        <p style="margin: 0; font-size: var(--fs-body-sm); color: var(--on-surface-muted);">Default card with padding. Used for most content areas.</p>
+      </div>
+      <div class="card" style="overflow: hidden;">
+        <div class="tphoto salt" style="height: 120px;"></div>
+        <div style="padding: var(--space-4);">
+          <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-1);">
+            <span style="font-weight: 600;">Reef 90</span>
+            <span class="chip chip-salt">Saltwater</span>
+          </div>
+          <p style="margin: 0; font-size: var(--fs-body-sm); color: var(--on-surface-muted);">Card with tank photo placeholder (.tphoto.salt).</p>
+        </div>
+      </div>
+      <div class="card" style="overflow: hidden;">
+        <div class="tphoto fresh" style="height: 120px;"></div>
+        <div style="padding: var(--space-4);">
+          <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-1);">
+            <span style="font-weight: 600;">Planted 40</span>
+            <span class="chip chip-fresh">Freshwater</span>
+          </div>
+          <p style="margin: 0; font-size: var(--fs-body-sm); color: var(--on-surface-muted);">Card with tank photo placeholder (.tphoto.fresh).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ===== 14 Modals (static demo) ===== #}
+  <section class="sg-section">
+    <div class="sg-section-head">
+      <span class="eyebrow">14</span>
+      <h2>Modal (static demo)</h2>
+      <span class="desc">Rendered open in-place for review; not JS-triggered here.</span>
+    </div>
+    <div style="position: relative; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: rgba(14,42,51,0.18); padding: var(--space-8);">
+      <div class="card" style="max-width: 480px; margin: 0 auto; padding: var(--space-6);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-5);">
+          <h3 style="margin: 0;">Log a reading</h3>
+          <button class="btn btn-ghost btn-sm" style="padding: 4px 8px; font-size: 18px; line-height: 1;" aria-label="Close">&times;</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+          <div class="field">
+            <label for="sg-modal-tank" class="field-label">Tank</label>
+            <select id="sg-modal-tank" class="select">
+              <option>Reef 90 (Saltwater)</option>
+              <option>Planted 40 (Freshwater)</option>
+            </select>
+          </div>
+          {{ numeric_field("sg-modal-sal", "Salinity", ["SG", "ppt"], value=1.025) }}
+          {{ numeric_field("sg-modal-temp2", "Temperature", ["°C", "°F"], value=25.4) }}
+        </div>
+        <div style="display: flex; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--border);">
+          <button class="btn btn-outline">Cancel</button>
+          <button class="btn btn-primary">Save reading</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

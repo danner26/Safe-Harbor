@@ -1,0 +1,153 @@
+/* Bootstrap 5 Sass variable overrides.
+
+   Imported by app.scss BEFORE Bootstrap's own _variables.scss so Bootstrap's
+   defaults are replaced by our semantic tokens. Bootstrap's utility classes
+   (.btn, .card, .navbar, .alert, .form-control, etc.) then render against
+   Safe Harbor's color/type/spacing/radius/shadow tokens automatically.
+
+   Source for token names: src/safeharbor/static/scss/tokens/_colors.scss
+                          src/safeharbor/static/scss/tokens/_type.scss
+                          src/safeharbor/static/scss/tokens/_spacing.scss
+
+   Bootstrap's variable reference: https://getbootstrap.com/docs/5.3/customize/sass/
+*/
+
+/* ---------- Typography ---------- */
+/* font-family values are strings — passed through verbatim to CSS, no compile-time
+   Sass computation needed. */
+$font-family-sans-serif: var(--font-sans);
+$font-family-monospace:  var(--font-mono);
+$headings-font-family:   var(--font-display);
+$headings-font-weight:   600;
+/* $headings-line-height and $headings-letter-spacing are used only as CSS output
+   values by Bootstrap — no Sass arithmetic. var() is safe here. */
+$headings-line-height:   var(--lh-snug);
+$headings-letter-spacing: var(--ls-tight);
+
+/* IMPORTANT: $font-size-base and $line-height-base must be literal numeric values.
+   Bootstrap does: $font-size-sm: $font-size-base * .875 !default; and
+   $form-check-min-height: $font-size-base * $line-height-base !default;
+   Sass arithmetic fails on var() references.
+   Values match the light-mode token values (--fs-body: 1rem; --lh-normal: 1.5). */
+$font-size-base:    1rem;    /* = --fs-body */
+$line-height-base:  1.5;     /* = --lh-normal */
+
+/* ---------- Spacing (Bootstrap's $spacer drives utility classes m-*, p-*) ---------- */
+/* IMPORTANT: $spacer must be a literal unit value — Bootstrap computes
+   $spacers: (1: $spacer * .25, 2: $spacer * .5, ...) at compile time.
+   Value matches --space-4 (1rem). */
+$spacer: 1rem;   /* = --space-4 */
+
+/* ---------- Borders ---------- */
+$border-color:        var(--border);
+$border-color-translucent: var(--border);
+$border-radius-sm:    var(--radius-sm);
+$border-radius:       var(--radius-md);
+$border-radius-lg:    var(--radius-lg);
+$border-radius-pill:  var(--radius-pill);
+
+/* ---------- Body / page ---------- */
+/* IMPORTANT: $body-bg and $body-color must be literal hex values.
+   Bootstrap does: to-rgb($body-bg) and rgba($body-color, .75) at compile time.
+   Sass color functions require Sass color objects, not CSS var() strings.
+   Values match the light-mode tokens. */
+$body-bg:    #F4F7F8;   /* = --surface (light, = --raw-ink-50) */
+$body-color: #0E2A33;   /* = --on-surface (light, = --raw-ink-800) */
+/* IMPORTANT: $body-secondary-color must also be a literal hex — Bootstrap's
+   _root.scss calls to-rgb($body-secondary-color) at compile time. */
+$body-secondary-color: #455258;   /* = --on-surface-muted (light, = --raw-ink-500) */
+
+/* ---------- Theme colors — drive Bootstrap utility classes (.bg-primary, .text-success, etc.) ----------
+   NOTE: These MUST be literal hex values (not var() references) because Bootstrap's _variables.scss
+   uses shade-color(), tint-color(), and shift-color() on these at Sass compile time. The CSS custom
+   properties in tokens/_colors.scss govern runtime theming; these hex values match the light-mode
+   token values and are used only for Bootstrap's compile-time color-scale generation.
+   ---------- */
+$primary:   #1B7A71;   /* --raw-teal-500 / --accent (light) */
+$secondary: #455258;   /* --raw-ink-500  / --on-surface-muted (light) */
+$success:   #2A9D6E;   /* --raw-success-light */
+$danger:    #C8463F;   /* --raw-danger-light */
+$warning:   #C97A1F;   /* --raw-warning-light */
+$info:      #1B8FC7;   /* --raw-info-light */
+$light:     #FFFFFF;   /* --surface-elevated (light) */
+$dark:      #0E2A33;   /* --raw-ink-800 / --on-surface (light) */
+
+/* ---------- Components ---------- */
+/* Cards */
+$card-bg:           var(--surface-elevated);
+$card-border-color: var(--border);
+$card-box-shadow:   var(--shadow-sm);
+
+/* Buttons */
+$btn-focus-box-shadow:    var(--shadow-focus);
+$btn-active-box-shadow:   none;
+$btn-border-radius:       var(--radius-md);
+$btn-border-radius-sm:    var(--radius-sm);
+$btn-border-radius-lg:    var(--radius-md);
+$btn-transition:          var(--motion-base);
+
+/* Navbar */
+$navbar-light-color:        var(--on-surface);
+$navbar-light-hover-color:  var(--accent);
+$navbar-light-active-color: var(--accent);
+$navbar-dark-color:         var(--on-surface);
+$navbar-dark-hover-color:   var(--accent);
+$navbar-dark-active-color:  var(--accent);
+
+/* Dropdowns */
+$dropdown-bg:           var(--surface-elevated);
+$dropdown-border-color: var(--border);
+$dropdown-link-color:   var(--on-surface);
+$dropdown-link-hover-color: var(--on-surface);
+$dropdown-link-hover-bg: var(--surface-sunken);
+$dropdown-link-active-bg: var(--accent-subtle);
+$dropdown-link-active-color: var(--accent-subtle-on);
+
+/* Modals */
+$modal-content-bg:           var(--surface-elevated);
+$modal-content-border-color: var(--border);
+$modal-content-box-shadow:   var(--shadow-lg);
+$modal-backdrop-bg:          rgba(0, 0, 0, 0.5);
+
+/* Tables */
+$table-bg:           transparent;
+$table-color:        var(--on-surface);
+$table-border-color: var(--border);
+$table-hover-bg:     var(--surface-sunken);
+$table-th-font-weight: var(--fw-semibold);
+
+/* Forms */
+$input-bg:                  var(--surface);
+$input-color:               var(--on-surface);
+$input-border-color:        var(--border-strong);
+$input-focus-bg:            var(--surface);
+$input-focus-border-color:  var(--accent);
+$input-focus-box-shadow:    var(--shadow-focus);
+$input-placeholder-color:   var(--on-surface-muted);
+$form-label-color:          var(--on-surface);
+$form-text-color:           var(--on-surface-muted);
+$form-feedback-invalid-color: var(--danger);
+$form-feedback-valid-color:   var(--success);
+$form-check-input-checked-bg-color: var(--accent);
+$form-check-input-focus-box-shadow: var(--shadow-focus);
+
+/* Alerts (Bootstrap's .alert-success, .alert-danger, etc.) */
+/* Bootstrap auto-derives alert-bg / alert-color from $primary, $success, etc.
+   Override the resolved values explicitly to use our --*-subtle variants
+   instead of Bootstrap's color-scaled defaults. */
+/* IMPORTANT: $alert-padding-x must be a literal value — Bootstrap does:
+   $alert-dismissible-padding-r: $alert-padding-x * 3 !default; */
+$alert-padding-y: 0.75rem;  /* = --space-3 */
+$alert-padding-x: 1rem;     /* = --space-4 */
+$alert-border-radius: var(--radius-md);
+
+/* Badges */
+$badge-padding-y: 0.25em;
+$badge-padding-x: 0.625em;
+$badge-border-radius: var(--radius-pill);
+$badge-font-weight: var(--fw-semibold);
+
+/* Disable Bootstrap's built-in dark-mode color-scheme handling — we handle it
+   in tokens/_colors.scss via prefers-color-scheme + [data-theme]. Bootstrap's
+   dark mode would conflict and produce wrong colors. */
+$enable-dark-mode: false;

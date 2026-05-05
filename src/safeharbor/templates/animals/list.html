@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Animals · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 32px auto; padding: 0 20px;">
+  <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <div>
+      <h1 style="font-family: var(--font-display); font-size: 32px; font-weight: 600; margin: 0 0 6px;">Your animals</h1>
+      <p class="muted" style="font-size: 14px; margin: 0;">
+        {{ alive_count }} alive &middot; {{ deceased_count }} deceased &middot; across {{ tank_count }} tanks
+      </p>
+    </div>
+    <a href="{{ url_for('animals.new_animal') }}" class="btn btn-primary">Add animal</a>
+  </header>
+
+  {% if not animal_rows %}
+    <div class="card" style="padding: 48px; text-align: center;">
+      <p style="font-size: 17px; margin: 0 0 12px;">No animals yet</p>
+      <p class="muted" style="font-size: 14px; margin: 0 0 20px;">add your first</p>
+      <a href="{{ url_for('animals.new_animal') }}" class="btn btn-primary">Add animal</a>
+    </div>
+  {% else %}
+    <div class="animals-table card" style="padding: 0; overflow-x: auto;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Species</th>
+            <th>Tank</th>
+            <th>Acquired</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in animal_rows %}
+            <tr>
+              <td>{{ row.animal.name or row.animal.species }}</td>
+              <td>
+                {{ row.animal.species }}
+                {% if row.animal.scientific_name %}
+                  <div class="muted" style="font-size: 12px;">{{ row.animal.scientific_name }}</div>
+                {% endif %}
+              </td>
+              <td>
+                {% if row.tank_name %}
+                  <span class="chip">{{ row.tank_name }}</span>
+                {% else %}
+                  <span class="muted">—</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if row.acquired_at and row.acquired_tank %}
+                  <time datetime="{{ row.acquired_at | tank_local(row.acquired_tank, fmt="iso") }}">
+                    {{ row.acquired_at | tank_local(row.acquired_tank, fmt="short") }}
+                  </time>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>{{ status_badge('animal', row.status) }}</td>
+              <td><a href="{{ url_for('animals.detail_animal', animal_id=row.animal.id) }}" class="btn btn-ghost btn-sm">View</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="animals-cards" style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+      {% for row in animal_rows %}
+        <article class="animal-card card" style="display: grid; grid-template-columns: 72px 1fr; gap: 14px; padding: 14px;">
+          <div aria-hidden="true" style="width: 72px; height: 72px; border-radius: 8px; background: linear-gradient(135deg, var(--surface-2), var(--border));"></div>
+          <div>
+            <div style="display: flex; justify-content: space-between; gap: 8px; align-items: flex-start;">
+              <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 600; margin: 0;">{{ row.animal.name or row.animal.species }}</h2>
+              {{ status_badge('animal', row.status) }}
+            </div>
+            {% if row.animal.scientific_name %}
+              <p class="muted" style="font-size: 13px; margin: 4px 0 0;">{{ row.animal.scientific_name }}</p>
+            {% endif %}
+            <p style="font-size: 14px; margin: 8px 0 0;">{{ row.animal.species }}</p>
+            <div style="display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap;">
+              {% if row.tank_name %}
+                <span class="chip">{{ row.tank_name }}</span>
+              {% else %}
+                <span class="muted" style="font-size: 13px;">No current tank</span>
+              {% endif %}
+              <span class="muted" style="font-size: 13px;">
+                {% if row.acquired_at and row.acquired_tank %}
+                  <time datetime="{{ row.acquired_at | tank_local(row.acquired_tank, fmt="iso") }}">
+                    {{ row.acquired_at | tank_local(row.acquired_tank, fmt="short") }}
+                  </time>
+                {% else %}
+                  Acquired date unknown
+                {% endif %}
+              </span>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

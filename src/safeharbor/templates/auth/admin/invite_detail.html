@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Invite · {{ invite.email }} · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 720px; margin: 40px auto; padding: 0 20px;">
+  <p class="eyebrow"><a href="{{ url_for('auth.admin_invites') }}" class="link">← Invites</a></p>
+  <h1 style="font-family: var(--font-display); font-size: 28px; font-weight: 600; margin: 0 0 24px;">Invite for {{ invite.email }}</h1>
+
+  {% if register_url %}
+    <div class="card" style="padding: 24px; margin-bottom: 24px; border: 2px solid var(--accent);">
+      <h2 style="font-size: 16px; margin: 0 0 8px;">Copy this link and share it with {{ invite.email }}</h2>
+      <p class="muted" style="font-size: 13px; margin: 0 0 12px;">This is the only time the link is shown. If you lose it, revoke and re-issue.</p>
+      <input class="input mono" readonly value="{{ register_url }}" onclick="this.select()" style="font-size: 12px;">
+    </div>
+  {% endif %}
+
+  <div class="card" style="padding: 24px;">
+    <h2 style="font-size: 16px; margin: 0 0 12px;">Details</h2>
+    <dl style="display: grid; grid-template-columns: 140px 1fr; gap: 8px 16px; margin: 0;">
+      <dt class="muted">Email</dt><dd>{{ invite.email }}</dd>
+      <dt class="muted">Status</dt>
+      <dd>
+        {% if invite.consumed_at and invite.consumed_by %}
+          <span class="badge badge-success">Redeemed</span>
+        {% elif invite.consumed_at %}
+          <span class="badge badge-muted">Revoked</span>
+        {% elif invite.expires_at <= now %}
+          <span class="badge badge-warning">Expired</span>
+        {% else %}
+          <span class="badge badge-info">Active</span>
+        {% endif %}
+      </dd>
+      <dt class="muted">Issued</dt><dd>{{ invite.issued_at.strftime('%Y-%m-%d %H:%M %Z') }}</dd>
+      <dt class="muted">Expires</dt><dd>{{ invite.expires_at.strftime('%Y-%m-%d %H:%M %Z') }}</dd>
+      {% if invite.consumed_at %}
+        <dt class="muted">Resolved</dt><dd>{{ invite.consumed_at.strftime('%Y-%m-%d %H:%M %Z') }}</dd>
+      {% endif %}
+    </dl>
+  </div>
+</div>
+{% endblock %}

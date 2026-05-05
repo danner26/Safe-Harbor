@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_macros.html" import display_measurement_value %}
+
+{% block title %}Measurements · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 32px auto; padding: 0 20px;">
+  <header style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <div>
+      <p class="eyebrow">Measurements</p>
+      <h1 style="font-family: var(--font-display); font-size: 32px; font-weight: 600; margin: 0;">Pick a tank</h1>
+    </div>
+  </header>
+
+  {% if not tanks %}
+    <div class="card" style="padding: 48px; text-align: center;">
+      <p style="font-size: 17px; margin: 0 0 12px;">No tanks yet</p>
+      <p class="muted" style="font-size: 14px; margin: 0 0 20px;">No tanks yet — create one to start logging readings.</p>
+      <a href="{{ url_for('tanks.new_tank') }}" class="btn btn-primary">Add a tank</a>
+    </div>
+  {% else %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+      {% for tank in tanks %}
+        <article class="card" style="overflow: hidden;">
+          <div class="tphoto {% if tank.water_type == 'salt' %}salt{% elif tank.water_type == 'brackish' %}brackish{% else %}fresh{% endif %}"></div>
+          <div style="padding: 18px;">
+            <span class="chip chip-{% if tank.water_type == 'salt' %}salt{% elif tank.water_type == 'brackish' %}brackish{% else %}fresh{% endif %}">{{ tank.water_type | title }}</span>
+            <h2 style="margin: 10px 0 8px; font-family: var(--font-display); font-size: 20px; font-weight: 600;">{{ tank.name }}</h2>
+
+            {% set latest = latest_by_tank_id.get(tank.id, []) %}
+            {% if latest %}
+              <div class="muted" style="font-size: 13px; line-height: 1.5; margin-bottom: 14px;">
+                <strong style="color: var(--ink); font-weight: 600;">Latest:</strong>
+                {% for measurement in latest %}
+                  {{ pt_display.get(measurement.parameter_type_id, "Reading") }} {{ display_measurement_value(measurement, pt_unit, unit_display_by_id) }}{% if not loop.last %} · {% endif %}
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="muted" style="margin: 0 0 14px; font-size: 13px;">No readings logged yet.</p>
+            {% endif %}
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <a href="{{ url_for('measurements.quick_add_get', tank=tank.id) }}" class="btn btn-primary btn-sm">Log a reading</a>
+              <a href="{{ url_for('measurements.batch_get', tank=tank.id) }}" class="btn btn-outline btn-sm">Log batch readings</a>
+              <a href="{{ url_for('tanks.history', tank_id=tank.id) }}" class="btn btn-ghost btn-sm">View history</a>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

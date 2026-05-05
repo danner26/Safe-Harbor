@@ -1,0 +1,67 @@
+<form id="quick-add-form"
+      method="post"
+      action="{{ url_for('measurements.quick_add_post') }}"
+      hx-post="{{ url_for('measurements.quick_add_post') }}"
+      hx-target="#qa-success-region"
+      hx-swap="innerHTML"
+      hx-on::after-request="if (event.detail.successful) this.querySelector('[data-qa-validation-banner]')?.remove()"
+      class="card"
+      style="padding: 24px;">
+  {{ form.hidden_tag() }}
+
+  {% if form.errors %}
+  <div data-qa-validation-banner
+       style="padding: 16px 18px; margin-bottom: 16px; border-left: 4px solid var(--danger); background: var(--danger-subtle);"
+       role="alert">
+    <strong>Could not log reading.</strong>
+    <span>Check the highlighted fields and try again.</span>
+  </div>
+  {% endif %}
+
+  <div class="field" style="margin-bottom: 16px;">
+    <label for="tank_id" class="field-label">Tank</label>
+    {{ form.tank_id(id="tank_id", class="input") }}
+    {% for err in form.tank_id.errors %}<div class="help" style="color: var(--danger);">{{ err }}</div>{% endfor %}
+  </div>
+
+  <div class="field" style="margin-bottom: 16px;">
+    <label for="parameter_key" class="field-label">Parameter</label>
+    <select id="parameter_key"
+            name="{{ form.parameter_key.name }}"
+            class="input"
+            hx-get="{{ url_for('measurements.units_for_parameter', parameter_key='') }}"
+            hx-target="#value_unit"
+            hx-swap="innerHTML"
+            hx-trigger="change"
+            hx-include="#parameter_key">
+      {% for value, label in form.parameter_key.choices %}
+        <option value="{{ value }}"{% if form.parameter_key.data == value %} selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    {% for err in form.parameter_key.errors %}<div class="help" style="color: var(--danger);">{{ err }}</div>{% endfor %}
+  </div>
+
+  <div class="field" style="margin-bottom: 16px;">
+    <label for="value" class="field-label">Value</label>
+    <div class="with-unit">
+      {{ form.value(id="value", class="input", inputmode="decimal", step="any") }}
+      {{ form.value_unit(id="value_unit", class="unit-select") }}
+    </div>
+    {% for err in form.value.errors %}<div class="help" style="color: var(--danger);">{{ err }}</div>{% endfor %}
+    {% for err in form.value_unit.errors %}<div class="help" style="color: var(--danger);">{{ err }}</div>{% endfor %}
+  </div>
+
+  <div class="field" style="margin-bottom: 16px;">
+    <label for="recorded_at" class="field-label">When</label>
+    {{ form.recorded_at(id="recorded_at", class="input") }}
+    {% for err in form.recorded_at.errors %}<div class="help" style="color: var(--danger);">{{ err }}</div>{% endfor %}
+  </div>
+
+  <div class="field" style="margin-bottom: 24px;">
+    <label for="note" class="field-label">Note <span class="muted">(optional)</span></label>
+    {{ form.note(id="note", class="input", maxlength=256) }}
+    {% for err in form.note.errors %}<div class="help" style="color: var(--danger);">{{ err }}</div>{% endfor %}
+  </div>
+
+  {{ form.submit(class="btn btn-primary") }}
+</form>
