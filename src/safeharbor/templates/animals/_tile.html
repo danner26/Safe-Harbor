@@ -1,0 +1,28 @@
+{% from "_macros.html" import status_badge %}
+
+<div style="display: grid; grid-template-columns: 128px 1fr; gap: 20px; align-items: start;">
+  <div aria-hidden="true" style="width: 128px; aspect-ratio: 1; border-radius: 8px; background: linear-gradient(135deg, var(--surface-2), var(--border));"></div>
+  <div>
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px;">
+      {{ status_badge('animal', 'alive' if is_alive else 'deceased') }}
+      {% if current_tank %}
+        <span class="chip">{{ current_tank.name }}</span>
+      {% else %}
+        <span class="chip">Tombstoned</span>
+      {% endif %}
+      {% if current_count > 1 %}
+        <span class="chip">{{ current_count }} total</span>
+      {% endif %}
+    </div>
+    <h1 style="font-family: var(--font-display); font-size: 32px; font-weight: 600; margin: 0;">
+      {{ animal.name or animal.species }}
+    </h1>
+    <p style="font-size: 15px; margin: 8px 0 0;">{{ animal.species }}</p>
+    {% if animal.scientific_name %}
+      <p class="muted" style="font-size: 14px; margin: 4px 0 0;"><em>{{ animal.scientific_name }}</em></p>
+    {% endif %}
+    {% if animal.notes %}
+      <p style="font-size: 14px; margin: 14px 0 0; max-width: 680px;">{{ animal.notes }}</p>
+    {% endif %}
+  </div>
+</div>

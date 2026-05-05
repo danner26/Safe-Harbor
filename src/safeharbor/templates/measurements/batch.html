@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Batch entry - {{ tank.name }} · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 32px auto; padding: 0 20px;">
+  <p class="eyebrow"><a href="{{ url_for('tanks.detail', tank_id=tank.id) }}" class="link">← {{ tank.name }}</a></p>
+
+
+  <header style="margin-bottom: 16px; display: flex; gap: 12px; align-items: center;">
+    <h1 style="font-family: var(--font-display); font-size: 28px; font-weight: 600; margin: 0;">Batch entry</h1>
+    <span class="chip chip-{% if tank.water_type == 'salt' %}salt{% elif tank.water_type == 'brackish' %}brackish{% else %}fresh{% endif %}">{{ tank.water_type | title }}</span>
+  </header>
+
+  <form method="post" action="{{ url_for('measurements.batch_post', tank=tank.id) }}" class="card" style="padding: 24px;">
+    {{ form.hidden_tag() }}
+    {{ form.tank_id() }}
+
+    <div class="field" style="margin-bottom: 16px;">
+      <label for="recorded_at" class="field-label">Recorded at</label>
+      {{ form.recorded_at(id="recorded_at", class="input") }}
+      {% for err in form.recorded_at.errors %}<div class="help" style="color: var(--danger);">{{ err }}</div>{% endfor %}
+    </div>
+
+    <table class="tbl" style="margin-bottom: 16px;">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Value</th>
+          <th>Unit</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pt in parameter_types %}
+          {% set value_field = form[pt.key + '_value'] %}
+          {% set unit_field = form[pt.key + '_unit'] %}
+          <tr>
+            <td><label for="{{ pt.key }}_value">{{ pt.display_name }}</label></td>
+            <td>{{ value_field(id=pt.key + '_value', class="input", inputmode="decimal", step="any") }}</td>
+            <td>{{ unit_field(class="unit-select") }}</td>
+          </tr>
+          {% if value_field.errors %}
+            <tr><td colspan="3" class="help" style="color: var(--danger);">{{ value_field.errors[0] }}</td></tr>
+          {% endif %}
+          {% if unit_field.errors %}
+            <tr><td colspan="3" class="help" style="color: var(--danger);">{{ unit_field.errors[0] }}</td></tr>
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="field" style="margin-bottom: 24px;">
+      <label for="note" class="field-label">Note <span class="muted">(optional, applied to all)</span></label>
+      {{ form.note(id="note", class="input", maxlength=256) }}
+      {% for err in form.note.errors %}<div class="help" style="color: var(--danger);">{{ err }}</div>{% endfor %}
+    </div>
+
+    {{ form.submit(class="btn btn-primary") }}
+  </form>
+</div>
+{% endblock %}

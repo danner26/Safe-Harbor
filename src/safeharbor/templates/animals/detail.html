@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}{{ animal.name or animal.species }} · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 32px auto; padding: 0 20px;">
+  <p class="eyebrow"><a href="{{ url_for('animals.list_animals') }}" class="link">← Animals</a></p>
+
+  <header class="card" style="padding: 24px; margin-bottom: 16px;">
+    <div style="display: grid; grid-template-columns: 128px 1fr; gap: 20px; align-items: start;">
+      {% if animal.image_path %}
+        <img
+          src="{{ url_for('animals.serve_image', animal_id=animal.id) }}"
+          alt="{% if animal.name %}{{ animal.name }}{% else %}{{ animal.species }}{% endif %} photo"
+          style="width: 128px; aspect-ratio: 1; object-fit: cover; border-radius: 8px;"
+        >
+      {% else %}
+        <div aria-hidden="true" style="width: 128px; aspect-ratio: 1; border-radius: 8px; background: linear-gradient(135deg, var(--surface-2), var(--border));"></div>
+      {% endif %}
+      <div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px;">
+          {{ status_badge('animal', 'alive' if is_alive else 'deceased') }}
+          {% if current_tank %}
+            <span class="chip">{{ current_tank.name }}</span>
+          {% else %}
+            <span class="chip">Tombstoned</span>
+          {% endif %}
+          {% if current_count > 1 %}
+            <span class="chip">{{ current_count }} total</span>
+          {% endif %}
+        </div>
+        <h1 style="font-family: var(--font-display); font-size: 32px; font-weight: 600; margin: 0;">
+          {{ animal.name or animal.species }}
+        </h1>
+        <p style="font-size: 15px; margin: 8px 0 0;">{{ animal.species }}</p>
+        {% if animal.scientific_name %}
+          <p class="muted" style="font-size: 14px; margin: 4px 0 0;"><em>{{ animal.scientific_name }}</em></p>
+        {% endif %}
+        {% if animal.notes %}
+          <p style="font-size: 14px; margin: 14px 0 0; max-width: 680px;">{{ animal.notes }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <div class="card" style="padding: 16px; margin-bottom: 16px;">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <a href="{{ url_for('animals.edit_animal', animal_id=animal.id) }}" class="btn btn-outline btn-sm" data-action="edit">Edit</a>
+      {% if is_alive %}
+        {% include "animals/_move_dropdown.html" with context %}
+        <button
+          type="button"
+          class="btn btn-outline btn-sm"
+          data-action="mark-deceased"
+          data-bs-toggle="modal"
+          data-bs-target="#deceased-modal"
+        >
+          Mark deceased
+        </button>
+      {% endif %}
+      <a href="?expand=note#add-note" class="btn btn-outline btn-sm" data-action="add-note">Add note</a>
+      {% if can_delete %}
+        <form
+          method="post"
+          action="{{ url_for('animals.delete_animal', animal_id=animal.id) }}"
+          style="margin: 0;"
+        >
+          {{ delete_form.csrf_token }}
+          <button type="submit" class="btn btn-danger btn-sm" data-action="delete">Delete</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <section class="card" style="padding: 24px;">
+    <details id="add-note" {% if request.args.get("expand") == "note" %}open{% endif %} style="margin-bottom: 20px;">
+      <summary class="btn btn-outline btn-sm" style="list-style: none; cursor: pointer;">Add note</summary>
+      <form
+        method="post"
+        action="{{ url_for('animals.add_note', animal_id=animal.id) }}"
+        style="display: grid; gap: 14px; margin-top: 16px;"
+      >
+        {{ note_form.csrf_token }}
+        <fieldset class="field" style="border: 0; padding: 0; margin: 0;">
+          <legend class="field-label">Event type</legend>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            {% for option in note_form.event_type %}
+              <label style="display: inline-flex; align-items: center; gap: 6px;">
+                {{ option(required=True) }}
+                <span>{{ option.label.text }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+        <div class="field" style="margin: 0;">
+          <label for="note-occurred-at" class="field-label">Occurred at</label>
+          {{ note_form.occurred_at(id="note-occurred-at", class_="input", required=True) }}
+        </div>
+        <div class="field" style="margin: 0;">
+          <label for="note-body" class="field-label">Note</label>
+          {{ note_form.note(id="note-body", class_="input", required=True, maxlength="512", rows="4") }}
+        </div>
+        <div>
+          <button type="submit" class="btn btn-primary btn-sm">Add note</button>
+        </div>
+      </form>
+    </details>
+
+    <h2 style="font-size: 18px; margin: 0 0 16px;">Timeline</h2>
+    {% include "animals/_timeline.html" with context %}
+  </section>
+
+  {% include "animals/_deceased_modal.html" with context %}
+</div>
+{% endblock %}

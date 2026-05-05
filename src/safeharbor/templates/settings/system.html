@@ -1,0 +1,34 @@
+{% extends "settings/_layout.html" %}
+{% block settings_title %}System settings{% endblock %}
+
+{% block settings_content %}
+<div class="card system-settings-card">
+  <section class="system-settings-row">
+    <div class="system-settings-copy">
+      <h2>Safe Harbor version</h2>
+      <p class="muted">Installed application version.</p>
+    </div>
+    <div class="system-settings-value">
+      <code>{{ safeharbor_version }}</code>
+    </div>
+  </section>
+
+  {% if current_user.is_superuser %}
+    <section class="system-settings-row">
+      <div class="system-settings-copy">
+        <h2>Email change verification</h2>
+        <p class="muted">Require a confirmation link before applying account email changes.</p>
+      </div>
+      <form method="post" action="{{ url_for('settings.system_email_verify_toggle') }}" class="system-settings-form">
+        {{ email_verify_form.hidden_tag() }}
+        <label class="system-settings-toggle" for="{{ email_verify_form.enabled.id }}">
+          {{ email_verify_form.enabled() }}
+          <span>{{ email_verify_form.enabled.label.text }}</span>
+        </label>
+        {{ email_verify_form.submit(class_="btn btn-primary") }}
+      </form>
+    </section>
+  {% endif %}
+</div>
+
+{% endblock %}

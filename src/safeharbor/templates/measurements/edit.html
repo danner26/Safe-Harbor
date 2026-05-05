@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Edit reading · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 520px; margin: 32px auto; padding: 0 20px;">
+  <p class="eyebrow"><a href="{{ url_for('tanks.history', tank_id=measurement.tank_id) }}" class="link">Back to history</a></p>
+
+
+  <header style="margin-bottom: 16px;">
+    <h1 style="font-family: var(--font-display); font-size: 28px; font-weight: 600; margin: 0;">Edit reading</h1>
+    <p class="muted" style="margin: 4px 0 0; font-size: 14px;">Update this logged measurement.</p>
+  </header>
+
+  <form method="post" action="{{ url_for('measurements.edit_post', measurement_id=measurement.id) }}" class="card" style="padding: 24px;">
+    {{ form.hidden_tag() }}
+
+    <div class="field" style="margin-bottom: 16px;">
+      <label for="value" class="field-label">Value</label>
+      <div class="with-unit">
+        {{ form.value(id="value", class="input", inputmode="decimal", step="any") }}
+        {{ form.value_unit(class="unit-select") }}
+      </div>
+      {% for err in form.value.errors %}<div class="help" style="color: var(--danger);">{{ err }}</div>{% endfor %}
+      {% for err in form.value_unit.errors %}<div class="help" style="color: var(--danger);">{{ err }}</div>{% endfor %}
+    </div>
+
+    <div class="field" style="margin-bottom: 16px;">
+      <label for="recorded_at" class="field-label">When</label>
+      {{ form.recorded_at(id="recorded_at", class="input") }}
+      {% for err in form.recorded_at.errors %}<div class="help" style="color: var(--danger);">{{ err }}</div>{% endfor %}
+    </div>
+
+    <div class="field" style="margin-bottom: 24px;">
+      <label for="note" class="field-label">Note <span class="muted">(optional)</span></label>
+      {{ form.note(id="note", class="input", maxlength=256) }}
+      {% for err in form.note.errors %}<div class="help" style="color: var(--danger);">{{ err }}</div>{% endfor %}
+    </div>
+
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      {{ form.submit(class="btn btn-primary") }}
+      <a class="btn btn-outline" href="{{ url_for('tanks.history', tank_id=measurement.tank_id) }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

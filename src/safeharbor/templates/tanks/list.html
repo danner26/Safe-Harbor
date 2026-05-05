@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Tanks · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 32px auto; padding: 0 20px;">
+  <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <h1 style="font-family: var(--font-display); font-size: 32px; font-weight: 600; margin: 0;">Tanks</h1>
+    <a href="{{ url_for('tanks.new_tank') }}" class="btn btn-primary">Add tank</a>
+  </header>
+
+  <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap;">
+    <span class="muted" style="font-size: 13px;">Filter:</span>
+    <a href="{{ url_for('tanks.list_tanks', view=view) }}"
+       class="btn btn-ghost btn-sm{% if status_filter != 'decommissioned' %} on{% endif %}">Active</a>
+    <a href="{{ url_for('tanks.list_tanks', status='decommissioned', view=view) }}"
+       class="btn btn-ghost btn-sm{% if status_filter == 'decommissioned' %} on{% endif %}">Decommissioned</a>
+
+    <span class="muted" style="font-size: 13px; margin-left: 24px;">View:</span>
+    <a href="{{ url_for('tanks.list_tanks', status=status_filter, view='cards') }}"
+       class="btn btn-ghost btn-sm{% if view != 'table' %} on{% endif %}">Cards</a>
+    <a href="{{ url_for('tanks.list_tanks', status=status_filter, view='table') }}"
+       class="btn btn-ghost btn-sm{% if view == 'table' %} on{% endif %}">Table</a>
+  </div>
+
+
+  {% if not tanks %}
+    <div class="card" style="padding: 48px; text-align: center;">
+      {% if status_filter == 'decommissioned' %}
+        <p class="muted" style="font-size: 15px; margin: 0;">No decommissioned tanks.</p>
+      {% else %}
+        <p style="font-size: 17px; margin: 0 0 12px;">No tanks yet</p>
+        <p class="muted" style="font-size: 14px; margin: 0 0 20px;">Get started by adding your first tank.</p>
+        <a href="{{ url_for('tanks.new_tank') }}" class="btn btn-primary">Add your first tank</a>
+      {% endif %}
+    </div>
+  {% elif view == 'table' %}
+    <div class="card" style="padding: 0; overflow-x: auto;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Water Type</th>
+            <th>Volume</th>
+            <th>Setup Date</th>
+            <th>Status</th>
+            {% if status_filter == 'decommissioned' %}<th>Decommissioned</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for tank in tanks %}
+            <tr>
+              <td><a href="{{ url_for('tanks.detail', tank_id=tank.id) }}">{{ tank.name }}</a></td>
+              <td>{{ tank.water_type | title }}</td>
+              <td>
+                {% if tank.volume_liters is not none %}
+                  {%- set v = display_volume(tank.volume_liters) -%}
+                  {{ v[0] }} {{ v[1] }}
+                {% else %}—{% endif %}
+              </td>
+              <td>{{ tank.setup_date.strftime('%Y-%m-%d') if tank.setup_date else '—' }}</td>
+              <td><span title="{% for p in health_by_tank_id[tank.id].by_parameter %}{{ p.display_name }}: {{ p.band }}{% if not loop.last %}; {% endif %}{% endfor %}">{{ status_badge('tank', health_by_tank_id[tank.id].rollup) }}</span></td>
+              {% if status_filter == 'decommissioned' %}<td>{{ tank.decommission_date.strftime('%Y-%m-%d') }}</td>{% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+      {% for tank in tanks %}
+        <article class="card" style="overflow: hidden; {% if tank.decommission_date %}opacity: 0.65;{% endif %}">
+          <div class="tphoto {% if tank.water_type == 'salt' %}salt{% elif tank.water_type == 'brackish' %}brackish{% else %}fresh{% endif %}"></div>
+          <div style="padding: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span class="chip chip-{% if tank.water_type == 'salt' %}salt{% elif tank.water_type == 'brackish' %}brackish{% else %}fresh{% endif %}">{{ tank.water_type | title }}</span>
+              <span title="{% for p in health_by_tank_id[tank.id].by_parameter %}{{ p.display_name }}: {{ p.band }}{% if not loop.last %}; {% endif %}{% endfor %}">{{ status_badge('tank', health_by_tank_id[tank.id].rollup) }}</span>
+            </div>
+            <h3 style="margin: 6px 0 4px; font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: -0.01em;">
+              <a href="{{ url_for('tanks.detail', tank_id=tank.id) }}" style="color: inherit; text-decoration: none;">{{ tank.name }}</a>
+            </h3>
+            <p class="muted" style="margin: 0; font-size: 13px;">
+              {% if tank.volume_liters is not none %}
+                {%- set v = display_volume(tank.volume_liters) -%}
+                {{ v[0] }} {{ v[1] }}
+              {% else %}No volume set{% endif %}
+              {% if tank.decommission_date %} · Decommissioned {{ tank.decommission_date.strftime('%Y-%m-%d') }}{% endif %}
+            </p>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

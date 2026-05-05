@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ user.email }} · Admin · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 720px; margin: 40px auto; padding: 0 20px;">
+  <p class="eyebrow"><a href="{{ url_for('auth.admin_users') }}" class="link">← Users</a></p>
+  <h1 style="font-family: var(--font-display); font-size: 28px; font-weight: 600; margin: 0 0 24px;">{{ user.email }}</h1>
+
+  {% if reset_url %}
+    <div class="card" style="padding: 24px; margin-bottom: 24px; border: 2px solid var(--accent);">
+      <h2 style="font-size: 16px; margin: 0 0 8px;">Copy this password-reset link and share it with {{ user.email }}</h2>
+      <p class="muted" style="font-size: 13px; margin: 0 0 12px;">Shown once. Expires in 1 hour. If lost, issue a new one below.</p>
+      <input class="input mono" readonly value="{{ reset_url }}" onclick="this.select()" style="font-size: 12px;">
+    </div>
+  {% endif %}
+
+  <div class="card" style="padding: 24px; margin-bottom: 24px;">
+    <h2 style="font-size: 16px; margin: 0 0 12px;">Details</h2>
+    <dl style="display: grid; grid-template-columns: 140px 1fr; gap: 8px 16px; margin: 0;">
+      <dt class="muted">Email</dt><dd>{{ user.email }}</dd>
+      <dt class="muted">Username</dt><dd>{{ user.username or '—' }}</dd>
+      <dt class="muted">Active</dt><dd>{{ 'Yes' if user.is_active else 'No' }}</dd>
+      <dt class="muted">Superuser</dt><dd>{{ 'Yes' if user.is_superuser else 'No' }}</dd>
+      <dt class="muted">Last login</dt><dd>{{ user.last_login_at.strftime('%Y-%m-%d %H:%M %Z') if user.last_login_at else 'Never' }}</dd>
+      <dt class="muted">Created</dt><dd>{{ user.created_at.strftime('%Y-%m-%d %H:%M %Z') }}</dd>
+    </dl>
+  </div>
+
+  <div class="card" style="padding: 24px;">
+    <h2 style="font-size: 16px; margin: 0 0 12px;">Actions</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <form method="post" action="{{ url_for('auth.admin_user_reset_password', user_id=user.id) }}" style="margin: 0;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-outline btn-sm" type="submit">Issue password reset</button>
+      </form>
+      {% if user.is_active %}
+        <form method="post" action="{{ url_for('auth.admin_user_deactivate', user_id=user.id) }}" style="margin: 0;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-outline btn-sm" type="submit">Deactivate</button>
+        </form>
+      {% else %}
+        <form method="post" action="{{ url_for('auth.admin_user_reactivate', user_id=user.id) }}" style="margin: 0;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-outline btn-sm" type="submit">Reactivate</button>
+        </form>
+      {% endif %}
+      {% if user.is_superuser %}
+        <form method="post" action="{{ url_for('auth.admin_user_demote', user_id=user.id) }}" style="margin: 0;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-outline btn-sm" type="submit">Demote</button>
+        </form>
+      {% else %}
+        <form method="post" action="{{ url_for('auth.admin_user_promote', user_id=user.id) }}" style="margin: 0;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-outline btn-sm" type="submit">Promote to superuser</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+
+# Virtualenv
+.venv/
+venv/
+
+# Build artifacts
+build/
+dist/
+*.tar.gz
+
+# Docker / runtime
+.docker/
+*.pid
+
+# Logs
+log/
+*.log
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Worktrees (per-phase)
+.worktrees/
+
+# Local env override
+.env
+.env.local
+docker-compose.override.yml

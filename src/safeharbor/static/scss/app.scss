@@ -1,0 +1,64 @@
+/* Safe Harbor application stylesheet entry point.
+   Compiled by `flask safeharbor build-css` to ../css/app.css.
+
+   Import order matters:
+   1. Tokens (CSS custom properties) — declared first so they're available
+      everywhere downstream
+   2. Bootstrap variable overrides — Sass variables that Bootstrap reads when
+      compiling its own _variables.scss
+   3. Bootstrap functions/variables/maps/mixins — required before any other
+      Bootstrap module
+   4. Bootstrap modules — selectively imported (only what we use, keeps CSS
+      smaller than including all of Bootstrap)
+   5. Custom components — Safe Harbor primitives (status badges, KPI cards,
+      etc.) added in Phase 1a Task 6
+*/
+
+/* 1. Tokens (semantic CSS custom properties; consumed via var()) */
+@import "tokens/colors";
+@import "tokens/type";
+@import "tokens/spacing";
+
+/* 2. Bootstrap variable overrides — set our Sass variables before Bootstrap
+   reads its defaults */
+@import "bootstrap-overrides";
+
+/* 3. Bootstrap functions/variables/maps/mixins — required base */
+@import "vendor/bootstrap/functions";
+@import "vendor/bootstrap/variables";
+@import "vendor/bootstrap/variables-dark";
+@import "vendor/bootstrap/maps";
+@import "vendor/bootstrap/mixins";
+@import "vendor/bootstrap/utilities";
+
+/* 4. Bootstrap modules — selectively included.
+   Add modules here as components require them; keep this list minimal.
+
+   DROPPED in Task 6 (replaced by components/_app.scss from Claude Design's screens.css):
+     buttons  → .btn family replaced by screens.css
+     forms    → .field/.input replaced by screens.css
+     card     → .card replaced by screens.css
+     navbar   → .dnav/.mtop/.mtabs replaced by screens.css
+     nav      → not used; screens.css has no .nav equivalent needed
+     tables   → .tbl replaces Bootstrap's .table
+     badge    → .badge replaced by screens.css
+
+   KEPT (no conflict with screens.css):
+     root, reboot, type, containers, grid — base infrastructure
+     dropdown, modal, transitions, alert — no screens.css equivalent; Bootstrap's versions retained
+*/
+@import "vendor/bootstrap/root";
+@import "vendor/bootstrap/reboot";
+@import "vendor/bootstrap/type";
+@import "vendor/bootstrap/containers";
+@import "vendor/bootstrap/grid";
+@import "vendor/bootstrap/dropdown";
+@import "vendor/bootstrap/modal";
+@import "vendor/bootstrap/transitions";
+@import "vendor/bootstrap/alert";
+
+/* 5. Custom components — Safe Harbor primitives lifted from Claude Design's screens.css */
+@import "components/app";
+
+/* 6. Bootstrap utilities API — last so utilities override component styles */
+@import "vendor/bootstrap/utilities/api";

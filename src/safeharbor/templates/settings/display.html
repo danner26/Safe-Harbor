@@ -1,0 +1,38 @@
+{% extends "settings/_layout.html" %}
+{% block settings_title %}Display preferences{% endblock %}
+
+{% block settings_content %}
+<form method="post" class="card" style="padding: 24px;">
+  {{ form.csrf_token }}
+  <p class="muted" style="font-size: 13px; margin: 0 0 16px;">Choose how Safe Harbor formats dates and color mode.</p>
+
+  <fieldset style="border: none; padding: 0; margin: 0 0 20px; display: flex; flex-direction: column; gap: 12px;">
+    <legend style="font-weight: 700; margin-bottom: 4px;">{{ form.theme.label.text }}</legend>
+    {% for value, label in form.theme.choices %}
+      <label style="display: flex; gap: 12px; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border); cursor: pointer;">
+        <input type="radio" name="theme" value="{{ value }}" {% if form.theme.data == value %}checked{% endif %}>
+        <span style="display: flex; flex-direction: column;">
+          <strong style="font-size: 14px;">{{ label }}</strong>
+          {% if value == "" %}
+            <small class="muted">Follow the device or browser color preference.</small>
+          {% elif value == "light" %}
+            <small class="muted">Use the light interface for this account.</small>
+          {% elif value == "dark" %}
+            <small class="muted">Use the dark interface for this account.</small>
+          {% endif %}
+        </span>
+      </label>
+    {% endfor %}
+  </fieldset>
+
+  <div style="display: flex; flex-direction: column; gap: 8px; margin: 0 0 20px;">
+    {{ form.date_format.label(style="font-weight: 700;") }}
+    {{ form.date_format(class_="form-control") }}
+    <small class="muted">Choose how dates appear throughout Safe Harbor.</small>
+  </div>
+
+  <div style="margin-top: 16px;">
+    {{ form.submit(class_="btn btn-primary") }}
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,237 @@
+{# Safe Harbor Jinja macro library — design-system primitives.
+   Land: Phase 1a Task 8.
+   Consumers: blueprint templates (Phase 1b auth, Phase 1c tanks/animals/measurements).
+   Usage: {% from "_macros.html" import status_badge, kpi_card, ... %}
+#}
+
+{# -------------------------------------------------------------------------
+   status_badge — renders .badge with the right variant + friendly label.
+
+   kind   : 'tank' | 'animal' | 'alert'
+   value  : enum string (see mappings below)
+   label  : optional override; defaults to friendly label per decisions.md voice
+   ------------------------------------------------------------------------- #}
+{% macro status_badge(kind, value, label=None) -%}
+  {%- set _labels = {
+    'tank': {
+      'healthy':   'Nominal',
+      'watch':     'Watch',
+      'unhealthy': 'Action needed',
+      'stale': 'Stale',
+      'unknown':   'Unknown',
+    },
+    'animal': {
+      'alive':     'Alive',
+      'deceased':  'Deceased',
+    },
+    'alert': {
+      'pending':      'Pending',
+      'sent':         'Sent',
+      'failed':       'Failed',
+      'suppressed':   'Suppressed',
+      'acknowledged': 'Acknowledged',
+    },
+  } -%}
+  {%- set _variants = {
+    'tank': {
+      'healthy':   'success',
+      'watch':     'warning',
+      'unhealthy': 'danger',
+      'stale': 'info',
+      'unknown':   'muted',
+    },
+    'animal': {
+      'alive':    'success',
+      'deceased': 'muted',
+    },
+    'alert': {
+      'pending':      'warning',
+      'sent':         'info',
+      'failed':       'danger',
+      'suppressed':   'muted',
+      'acknowledged': 'success',
+    },
+  } -%}
+  {%- set _kind_labels = _labels.get(kind, {}) -%}
+  {%- set _kind_variants = _variants.get(kind, {}) -%}
+  {%- set _label   = label if label is not none else _kind_labels.get(value, value | title) -%}
+  {%- set _variant = _kind_variants.get(value, 'muted') -%}
+  <span class="badge badge-{{ _variant }}">
+    <span class="dot" aria-hidden="true"></span>
+    {{ _label }}
+  </span>
+{%- endmacro %}
+
+
+{# -------------------------------------------------------------------------
+   kpi_card — dashboard KPI strip card.
+
+   label  : display label (e.g. 'Salinity')
+   value  : pre-formatted number string (caller does formatting)
+   unit   : optional suffix string (e.g. '°C', 'ppm', 'SG')
+   trend  : None | 'up' | 'down' | 'flat'
+   status : 'neutral' | 'warning'  (.kpi-card-warning turns card amber)
+   ------------------------------------------------------------------------- #}
+{% macro kpi_card(label, value, unit=None, trend=None, status='neutral') -%}
+  <div class="kpi-card{% if status == 'warning' %} kpi-card-warning{% endif %}">
+    <div class="kpi-label">{{ label }}</div>
+    <div class="kpi-value">
+      <span class="kpi-num">{{ value }}</span>
+      {%- if unit %}<span class="kpi-unit">{{ unit }}</span>{% endif -%}
+    </div>
+    {%- if trend %}
+      <div class="kpi-trend kpi-trend-{{ trend }}" aria-label="{{ trend }}">
+        {%- if trend == 'up' -%}&#x2191;
+        {%- elif trend == 'down' -%}&#x2193;
+        {%- else -%}&#x2192;
+        {%- endif -%}
+      </div>
+    {%- endif %}
+  </div>
+{%- endmacro %}
+
+
+{# -------------------------------------------------------------------------
+   display_measurement_value — prefer user-entered raw value/unit for display.
+
+   measurement         : Measurement row object
+   pt_unit             : {parameter_type_id: canonical unit display}
+   unit_display_by_id  : {unit_id: unit display}
+   ------------------------------------------------------------------------- #}
+{% macro display_measurement_value(measurement, pt_unit, unit_display_by_id) -%}
+  {%- set display_value = measurement.raw_value if measurement.raw_value is not none else measurement.value -%}
+  {%- set display_unit = unit_display_by_id.get(measurement.raw_unit_id) if measurement.raw_value is not none else pt_unit.get(measurement.parameter_type_id) -%}
+  {{ display_value }}{% if display_unit %} {{ display_unit }}{% endif %}
+{%- endmacro %}
+
+
+{# -------------------------------------------------------------------------
+   empty_state — icon + headline + body + optional CTA button.
+
+   icon     : unicode glyph or short HTML snippet (rendered |safe)
+   headline : short h2 string
+   body     : paragraph text
+   cta_text : optional button label
+   cta_url  : optional button href (rendered only when cta_text also set)
+   ------------------------------------------------------------------------- #}
+{% macro empty_state(icon, headline, body, cta_text=None, cta_url=None) -%}
+  <div class="empty-state">
+    <div class="empty-state-icon" aria-hidden="true">{{ icon | safe }}</div>
+    <h2 class="empty-state-headline">{{ headline }}</h2>
+    <p class="empty-state-body">{{ body }}</p>
+    {%- if cta_text and cta_url %}
+      <a href="{{ cta_url }}" class="btn btn-primary">{{ cta_text }}</a>
+    {%- endif %}
+  </div>
+{%- endmacro %}
+
+
+{# -------------------------------------------------------------------------
+   chart_container — Plotly mount point with header + optional range chips.
+
+   title         : chart section title
+   subtitle      : optional muted sub-title string
+   chart_id      : id= for the <div> Plotly mounts into (default 'chart')
+   range_options : list of (value, label) tuples for date-range chip group
+                   e.g. [('7d', '7 days'), ('30d', '30 days'), ('90d', '90 days')]
+   ------------------------------------------------------------------------- #}
+{% macro chart_container(title, subtitle=None, chart_id='chart', range_options=None) -%}
+  <div class="chart-card">
+    <div class="chart-head">
+      <div>
+        <h3 class="chart-title">{{ title }}</h3>
+        {%- if subtitle %}
+          <p class="chart-sub">{{ subtitle }}</p>
+        {%- endif %}
+      </div>
+      {%- if range_options %}
+        <div class="seg" role="group" aria-label="Date range">
+          {%- for opt_value, opt_label in range_options %}
+            <button type="button" class="seg-item" data-range="{{ opt_value }}">{{ opt_label }}</button>
+          {%- endfor %}
+        </div>
+      {%- endif %}
+    </div>
+    <div class="chart-body" id="{{ chart_id }}">
+      <div class="chart-empty">No data yet</div>
+    </div>
+  </div>
+{%- endmacro %}
+
+
+{# -------------------------------------------------------------------------
+   numeric_field — Bootstrap input-group with sticky unit suffix.
+
+   name         : HTML name / id attribute
+   label        : visible field label
+   unit_options : list of unit code strings; single item → static suffix,
+                  multiple items → <select> dropdown
+                  e.g. ['°C', '°F'] or ['ppm']
+   value        : optional current value
+   required     : renders required attribute and * hint
+   help_text    : optional muted helper string below the field
+   error        : optional error string (also adds .field-error styling)
+   ------------------------------------------------------------------------- #}
+{% macro numeric_field(name, label, unit_options, value=None, required=False, help_text=None, error=None) -%}
+  <div class="field{% if error %} field-error{% endif %}">
+    <label for="{{ name }}" class="field-label">
+      {{ label }}{% if required %} <span class="muted" aria-hidden="true">*</span>{% endif %}
+    </label>
+    <div class="with-unit">
+      <input
+        id="{{ name }}"
+        name="{{ name }}"
+        type="number"
+        inputmode="decimal"
+        step="any"
+        value="{{ value if value is not none else '' }}"
+        {%- if required %} required{% endif %}
+        class="input"
+      />
+      {%- if unit_options | length == 1 %}
+        <span class="unit-suffix">{{ unit_options[0] }}</span>
+      {%- else %}
+        <select name="{{ name }}_unit" class="unit-select" aria-label="Unit">
+          {%- for unit in unit_options %}
+            <option value="{{ unit }}">{{ unit }}</option>
+          {%- endfor %}
+        </select>
+      {%- endif %}
+    </div>
+    {%- if help_text %}
+      <div class="help muted">{{ help_text }}</div>
+    {%- endif %}
+    {%- if error %}
+      <div class="help" style="color: var(--danger);">{{ error }}</div>
+    {%- endif %}
+  </div>
+{%- endmacro %}
+
+
+{# -------------------------------------------------------------------------
+   flash_messages — non-inline render of Flask's get_flashed_messages.
+
+   The base.html template already renders flashes inline in its #flash-region.
+   Use this macro when a sub-template wants flashes rendered in a different
+   location (e.g. inside a modal, within a card body, etc.).
+
+   Output structure mirrors base.html's inline flash region.
+   Categories: 'success', 'error', 'warning', 'info' (default)
+   ------------------------------------------------------------------------- #}
+{% macro flash_messages() -%}
+  {%- with messages = get_flashed_messages(with_categories=true) -%}
+    {%- if messages -%}
+      <div class="flash-region" style="margin-top: var(--space-4);">
+        {%- for category, message in messages -%}
+          {%- set _bs = ('success' if category == 'success' else
+                         'danger'  if category == 'error'   else
+                         'warning' if category == 'warning'  else 'info') -%}
+          <div class="alert alert-{{ _bs }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  {%- endwith -%}
+{%- endmacro %}

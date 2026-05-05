@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}{% if tank %}Edit {{ tank.name }}{% else %}Add tank{% endif %} · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 720px; margin: 32px auto; padding: 0 20px;">
+  <p class="eyebrow"><a href="{{ url_for('tanks.list_tanks') }}" class="link">← Tanks</a></p>
+  <h1 style="font-family: var(--font-display); font-size: 28px; font-weight: 600; margin: 0 0 24px;">
+    {% if tank %}Edit {{ tank.name }}{% else %}Add tank{% endif %}
+  </h1>
+
+  <form method="post" action="{% if tank %}{{ url_for('tanks.update_tank', tank_id=tank.id) }}{% else %}{{ url_for('tanks.create_tank') }}{% endif %}">
+    {{ form.csrf_token }}
+    <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+      <div class="field">
+        {{ form.name.label }}
+        {{ form.name(class_="input", autofocus=true) }}
+        {% for e in form.name.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="field">
+          {{ form.water_type.label }}
+          <select id="{{ form.water_type.id }}"
+                  name="{{ form.water_type.name }}"
+                  class="input"
+                  hx-get="{{ url_for('tanks.profile_options_for_water_type', water_type='') }}"
+                  hx-target="#profile_key"
+                  hx-swap="innerHTML"
+                  hx-trigger="change"
+                  hx-include="#water_type"
+                  {% if form.water_type.flags.required %}required{% endif %}>
+            {% for value, label in form.water_type.choices %}
+              <option value="{{ value }}"{% if form.water_type.data == value %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          {% for e in form.water_type.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+        </div>
+        <div class="field">
+          {{ form.profile_key.label }}
+          {{ form.profile_key(class_="input") }}
+          {% for e in form.profile_key.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+        </div>
+      </div>
+
+      <div class="field">
+        {{ form.timezone.label }}
+        {{ form.timezone(class_="input") }}
+        {% for e in form.timezone.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+        {% if not tank %}
+          <script>
+            (() => {
+              const timezoneSelect = document.getElementById("timezone");
+              const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+              if (!timezoneSelect || !browserTimezone) {
+                return;
+              }
+              const hasBrowserTimezone = Array.from(timezoneSelect.options).some(
+                (option) => option.value === browserTimezone,
+              );
+              if (hasBrowserTimezone) {
+                timezoneSelect.value = browserTimezone;
+              }
+            })();
+          </script>
+        {% endif %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+        <div class="field">
+          {{ form.volume.label }}
+          {{ form.volume(class_="input", placeholder="e.g. 90") }}
+          {% for e in form.volume.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+        </div>
+        <div class="field">
+          {{ form.volume_unit.label }}
+          {{ form.volume_unit(class_="input") }}
+        </div>
+      </div>
+
+      <div class="field">
+        {{ form.setup_date.label }}
+        {{ form.setup_date(class_="input", type="date") }}
+        {% for e in form.setup_date.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+      </div>
+
+      <div class="field">
+        {{ form.substrate.label }}
+        {{ form.substrate(class_="input", placeholder="e.g. live sand") }}
+      </div>
+
+      <div class="field">
+        {{ form.equipment_notes.label }}
+        {{ form.equipment_notes(class_="input", rows=4, placeholder="Filter, lights, return pump…") }}
+        <span class="help muted">
+          <a href="https://commonmark.org/help/" target="_blank" rel="noopener noreferrer">Markdown supported</a> (links, headings, lists, code).
+        </span>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 8px; margin-top: 16px;">
+      <button type="submit" class="btn btn-primary">{% if tank %}Save changes{% else %}Create tank{% endif %}</button>
+      <a href="{% if tank %}{{ url_for('tanks.detail', tank_id=tank.id) }}{% else %}{{ url_for('tanks.list_tanks') }}{% endif %}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+
+  {% if tank and image_form %}
+    <section class="card" style="padding: 24px; margin-top: 24px;">
+      <h2 style="font-family: var(--font-display); font-size: 20px; font-weight: 600; margin: 0 0 16px;">Tank photo</h2>
+
+      {% if tank.image_path %}
+        <img
+          src="{{ url_for('tanks.serve_image', tank_id=tank.id) }}"
+          alt="{{ tank.name }} photo"
+          style="display: block; width: 100%; max-height: 320px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;"
+        >
+      {% endif %}
+
+      <form method="post" action="{{ url_for('tanks.upload_image', tank_id=tank.id) }}" enctype="multipart/form-data">
+        {{ image_form.hidden_tag() }}
+        <div class="field">
+          {{ image_form.image.label }}
+          {{ image_form.image(class_="input", accept=".jpg,.jpeg,.png,.webp,.heic,image/jpeg,image/png,image/webp,image/heic") }}
+          {% for e in image_form.image.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 16px;">
+          <button type="submit" class="btn btn-primary">Upload photo</button>
+        </div>
+      </form>
+
+      {% if tank.image_path %}
+        <form method="post" action="{{ url_for('tanks.remove_image', tank_id=tank.id) }}" style="margin-top: 12px;">
+          {{ image_form.hidden_tag() }}
+          <button type="submit" class="btn btn-ghost">Remove photo</button>
+        </form>
+      {% endif %}
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

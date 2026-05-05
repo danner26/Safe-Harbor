@@ -1,0 +1,3 @@
+{% for unit in units -%}
+<option{% if unit == selected_unit %} selected{% endif %} value="{{ unit }}">{{ unit }}</option>
+{% endfor -%}

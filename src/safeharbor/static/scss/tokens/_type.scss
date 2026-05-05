@@ -1,0 +1,126 @@
+/* Type tokens — fonts, scale, weights, line heights, letter spacing,
+   plus base element bindings for h1-h6, p, small, code, a.
+   Source of truth: docs/design/phase-1a/canvases/shared/tokens.css
+
+   Typography decision: Fraunces (display) + system-sans (body) + system-mono (data),
+   per Brief A's "calm / organic / marine / timeless" voice. Fraunces self-hosted
+   from src/safeharbor/static/fonts/fraunces/. Geist (the alternative discussed
+   in canvases/decisions.md) is "tech-product modern," wrong fit for the voice. */
+
+/* @font-face declarations — Fraunces variable font (single file, latin subset,
+   covers full weight range 100-900 via wght axis).
+   Source: fontsource.org (cdn.jsdelivr.net/fontsource) — SIL OFL license.
+   File: src/safeharbor/static/fonts/fraunces/Fraunces-VariableFont_SOFT,WONK,opsz,wght.woff2
+   Size: ~36KB (latin-subsetted variable font; ~2x a single static weight, expected ratio). */
+@font-face {
+  font-family: "Fraunces";
+  src: url("/static/fonts/fraunces/Fraunces-VariableFont_SOFT,WONK,opsz,wght.woff2") format("woff2-variations"),
+       url("/static/fonts/fraunces/Fraunces-VariableFont_SOFT,WONK,opsz,wght.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Font stacks — system-first */
+  --font-display: "Fraunces", "Iowan Old Style", "Apple Garamond",
+                  Georgia, "Times New Roman", serif;
+  --font-sans:    -apple-system, BlinkMacSystemFont, "Segoe UI",
+                  "Helvetica Neue", Arial, "Liberation Sans",
+                  system-ui, sans-serif;
+  --font-mono:    ui-monospace, "SF Mono", Menlo, Consolas,
+                  "Liberation Mono", monospace;
+
+  /* Type scale — mobile-first; clamp() for fluid scaling on larger sizes */
+  --fs-display:   clamp(2.25rem, 1.6rem + 2.6vw, 3.25rem);  /* 36–52 */
+  --fs-h1:        clamp(1.875rem, 1.5rem + 1.5vw, 2.5rem);  /* 30–40 */
+  --fs-h2:        clamp(1.5rem, 1.3rem + 0.9vw, 2rem);      /* 24–32 */
+  --fs-h3:        1.375rem;   /* 22 */
+  --fs-h4:        1.125rem;   /* 18 */
+  --fs-h5:        1rem;       /* 16 */
+  --fs-h6:        0.875rem;   /* 14 */
+  --fs-body-lg:   1.0625rem;  /* 17 */
+  --fs-body:      1rem;       /* 16 */
+  --fs-body-sm:   0.9375rem;  /* 15 — input minimum on phones */
+  --fs-caption:   0.8125rem;  /* 13 */
+  --fs-mono:      0.9375rem;  /* 15 */
+
+  /* Line heights (unitless multipliers) */
+  --lh-tight:     1.15;
+  --lh-snug:      1.3;
+  --lh-normal:    1.5;
+  --lh-relaxed:   1.625;
+
+  /* Weights */
+  --fw-regular:   400;
+  --fw-medium:    500;
+  --fw-semibold:  600;
+  --fw-bold:      700;
+
+  /* Letter spacing */
+  --ls-tight:    -0.01em;
+  --ls-normal:    0;
+  --ls-wide:      0.04em;
+  --ls-caps:      0.08em;
+}
+
+/* Base element bindings — bare HTML already looks like Safe Harbor */
+
+html {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: var(--lh-normal);
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--on-surface);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-regular);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--on-surface);
+  margin: 0 0 var(--space-3);
+  letter-spacing: var(--ls-tight);
+  line-height: var(--lh-snug);
+  font-weight: var(--fw-semibold);
+}
+
+h1 { font-size: var(--fs-h1); }
+h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-h3); }
+h4 { font-size: var(--fs-h4); font-family: var(--font-sans); }
+h5 { font-size: var(--fs-h5); font-family: var(--font-sans); }
+h6 {
+  font-size: var(--fs-h6);
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-caps);
+  color: var(--on-surface-muted);
+}
+
+p     { margin: 0 0 var(--space-4); line-height: var(--lh-relaxed); }
+small { font-size: var(--fs-caption); color: var(--on-surface-muted); }
+
+code, pre, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+}
+
+a {
+  color: var(--accent);
+  text-decoration-color: color-mix(in oklab, var(--accent) 40%, transparent);
+  text-underline-offset: 2px;
+}
+a:hover { color: var(--accent-hover); }
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 30%, transparent);
+  color: var(--on-surface);
+}

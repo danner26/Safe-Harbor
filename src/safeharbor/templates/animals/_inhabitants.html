@@ -1,0 +1,32 @@
+<div class="card" style="padding: 24px;">
+  <header style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;">
+    <h2 style="font-size: 18px; margin: 0;">Animals</h2>
+    <a href="{{ url_for('animals.new_animal', tank=tank.id) }}" class="btn btn-outline btn-sm">Add one</a>
+  </header>
+
+  {% if inhabitants %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+      {% for animal in inhabitants %}
+        <a href="{{ url_for('animals.detail_animal', animal_id=animal.id) }}" style="display: block; padding: 12px; color: inherit; text-decoration: none; border: 1px solid var(--border); border-radius: 8px; background: var(--surface);">
+          {% if animal.image_path %}
+            <img
+              src="{{ url_for('animals.serve_image', animal_id=animal.id) }}"
+              alt="{% if animal.name %}{{ animal.name }}{% else %}{{ animal.species }}{% endif %} photo"
+              style="display: block; width: 100%; height: 96px; object-fit: cover; border-radius: 6px; margin-bottom: 10px;"
+            >
+          {% else %}
+            <div aria-hidden="true" style="height: 96px; border-radius: 6px; margin-bottom: 10px; background: linear-gradient(135deg, var(--surface-2), var(--border));"></div>
+          {% endif %}
+          <strong style="display: block; font-size: 15px; line-height: 1.3;">{{ animal.name or animal.species }}</strong>
+          {% if animal.name %}
+            <span class="muted" style="display: block; margin-top: 2px; font-size: 12px;">{{ animal.species }}</span>
+          {% endif %}
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <a href="{{ url_for('animals.new_animal', tank=tank.id) }}" class="link" style="display: inline-block; margin-top: 4px;">
+      No animals on this tank yet — Add one →
+    </a>
+  {% endif %}
+</div>

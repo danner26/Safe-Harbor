@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Log a reading · Safe Harbor{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 520px; margin: 32px auto; padding: 0 20px;">
+  <p class="eyebrow"><a href="{{ url_for('home.index') }}" class="link">← Dashboard</a></p>
+
+  {% if just_logged %}
+    <div class="card" style="padding: 14px 20px; margin-bottom: 16px; border-left: 3px solid var(--success); background: var(--success-subtle);">
+      <strong>Logged.</strong> Record another or
+      {% if selected_tank %}<a href="{{ url_for('tanks.detail', tank_id=selected_tank.id) }}" class="link">return to {{ selected_tank.name }}</a>.
+      {% else %}<a href="{{ url_for('home.index') }}" class="link">return to dashboard</a>.{% endif %}
+    </div>
+  {% endif %}
+
+
+  <header style="margin-bottom: 16px;">
+    <h1 style="font-family: var(--font-display); font-size: 28px; font-weight: 600; margin: 0;">Log a reading</h1>
+    <p class="muted" style="margin: 4px 0 0; font-size: 14px;">Quick single-parameter entry.</p>
+  </header>
+
+  {% include "measurements/_quick_add_form.html" %}
+
+  <div id="qa-success-region"></div>
+</div>
+{% endblock %}

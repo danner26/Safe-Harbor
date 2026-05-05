@@ -1,0 +1,334 @@
+/* ============================================================
+   Safe Harbor — Color Tokens
+   src/safeharbor/static/scss/tokens/_colors.scss
+   ============================================================
+   Ported verbatim from docs/design/phase-1a/canvases/shared/tokens.css
+   (v3 Claude Design export, canonical for implementation).
+
+   Consumers MUST reference only the semantic tokens (--surface,
+   --accent, --success, etc.). The --raw-* tokens are implementation
+   detail for the design system's own use; never reference them
+   directly in components.
+
+   Bug fix (Option A — aliases): the v3 export's [data-theme="light"]
+   block referenced --raw-success / --raw-warning / --raw-danger /
+   --raw-info / --raw-fresh / --raw-salt / --raw-brackish and their
+   --raw-*-subtle / --raw-*-subtle-on variants — tokens that weren't
+   defined anywhere in the file (only *-light and *-dark existed).
+   Fixed by adding unsuffixed aliases in :root so the override block
+   actually restores the full light palette in subtrees nested under
+   dark-mode ancestors. Subtle hex values lifted from the inline
+   declarations in v1's :root (styleguide/colors_and_type.css).
+   ============================================================ */
+
+/* ---------- Brand seed (logo-derived) ----------
+   Pulled from SafeHarborLogo.svg:
+   - Sky blue:   #4BC6FF  (cloud / water reflection)
+   - Sand mid:   #DB9970  (harbor edge)
+   - Sand light: #FCC595  (beach / horizon)
+   - Hull/Outline: #0E2A33 (deep marine ink)
+
+   These seeds are NOT consumed directly by components. They
+   feed the semantic tokens below.
+   ------------------------------------------------ */
+
+:root {
+  /* ---------- Raw palette (do not consume directly) ---------- */
+  --raw-sky-50:  #EAF7FF;
+  --raw-sky-100: #CDECFF;
+  --raw-sky-200: #A6DEFF;
+  --raw-sky-300: #74CDFF;
+  --raw-sky-400: #4BC6FF;   /* logo */
+  --raw-sky-500: #2BAEEC;
+  --raw-sky-600: #1B8FC7;
+  --raw-sky-700: #176F9C;
+  --raw-sky-800: #155575;
+  --raw-sky-900: #0F3A52;
+
+  --raw-teal-50:  #E6F5F4;
+  --raw-teal-100: #C2E6E2;
+  --raw-teal-200: #8FD0C9;
+  --raw-teal-300: #58B5AB;
+  --raw-teal-400: #2E978C;
+  --raw-teal-500: #1B7A71;   /* primary accent */
+  --raw-teal-600: #135E57;
+  --raw-teal-700: #0E4943;
+  --raw-teal-800: #0A3733;
+  --raw-teal-900: #062722;
+
+  --raw-sand-50:  #FCF6EE;
+  --raw-sand-100: #F8E8D2;
+  --raw-sand-200: #FCC595;   /* logo light sand */
+  --raw-sand-300: #E9B287;
+  --raw-sand-400: #DB9970;   /* logo mid sand */
+  --raw-sand-500: #B97E5A;
+  --raw-sand-600: #8E5F44;
+
+  --raw-ink-50:  #F4F7F8;
+  --raw-ink-100: #E6ECEE;
+  --raw-ink-200: #C9D4D8;
+  --raw-ink-300: #9AAAB0;
+  --raw-ink-400: #6A7C82;
+  --raw-ink-500: #455258;
+  --raw-ink-600: #2C383D;
+  --raw-ink-700: #1A2428;
+  --raw-ink-800: #0E2A33;   /* logo hull */
+  --raw-ink-900: #07181C;
+
+  --raw-success-light: #2A9D6E;
+  --raw-success-dark:  #4FC494;
+  --raw-warning-light: #C97A1F;
+  --raw-warning-dark:  #F0A958;
+  --raw-danger-light:  #C8463F;
+  --raw-danger-dark:   #F08079;
+  --raw-info-light:    #1B8FC7;
+  --raw-info-dark:     #74CDFF;
+
+  /* Tank-type accents (water types) */
+  --raw-fresh-light:    #2E978C;  /* teal — freshwater */
+  --raw-fresh-dark:     #58B5AB;
+  --raw-salt-light:     #1B8FC7;  /* deep blue — saltwater */
+  --raw-salt-dark:      #74CDFF;
+  --raw-brackish-light: #6B8E63;  /* murky green — brackish */
+  --raw-brackish-dark:  #9BB68F;
+
+  /* Aliases — the [data-theme="light"] override block references these
+     unsuffixed names; defined here once so the override actually works
+     when a light-themed element is nested under a dark-mode ancestor. */
+  --raw-success:            var(--raw-success-light);
+  --raw-success-subtle:     #E6F5EE;
+  --raw-success-subtle-on:  #1F6E4E;
+  --raw-warning:            var(--raw-warning-light);
+  --raw-warning-subtle:     #FCF1E2;
+  --raw-warning-subtle-on:  #8C5414;
+  --raw-danger:             var(--raw-danger-light);
+  --raw-danger-subtle:      #FBEAE9;
+  --raw-danger-subtle-on:   #8C2F2A;
+  --raw-info:               var(--raw-info-light);
+  --raw-info-subtle:        var(--raw-sky-50);
+  --raw-info-subtle-on:     var(--raw-sky-800);
+  --raw-fresh:              var(--raw-fresh-light);
+  --raw-salt:               var(--raw-salt-light);
+  --raw-brackish:           var(--raw-brackish-light);
+
+  /* ============================================================
+     SEMANTIC TOKENS — light mode (default)
+     Consumers reference ONLY these.
+     ============================================================ */
+
+  /* Surfaces */
+  --surface:           var(--raw-ink-50);     /* page background */
+  --surface-elevated:  #FFFFFF;               /* cards, modals */
+  --surface-sunken:    #ECF0F2;               /* inset wells, code blocks */
+
+  /* Foreground */
+  --on-surface:        var(--raw-ink-800);
+  --on-surface-muted:  var(--raw-ink-500);
+
+  /* Lines */
+  --border:            var(--raw-ink-100);
+  --border-strong:     var(--raw-ink-200);
+
+  /* Brand accent (primary) */
+  --accent:            var(--raw-teal-500);
+  --accent-hover:      var(--raw-teal-600);
+  --accent-active:     var(--raw-teal-700);
+  --accent-on:         #FFFFFF;
+  --accent-subtle:     var(--raw-teal-50);
+  --accent-subtle-on:  var(--raw-teal-700);
+
+  /* Status — semantic */
+  --success:           var(--raw-success-light);
+  --success-on:        #FFFFFF;
+  --success-subtle:    #E6F5EE;
+  --success-subtle-on: #1F6E4E;
+
+  --warning:           var(--raw-warning-light);
+  --warning-on:        #FFFFFF;
+  --warning-subtle:    #FCF1E2;
+  --warning-subtle-on: #8C5414;
+
+  --danger:            var(--raw-danger-light);
+  --danger-on:         #FFFFFF;
+  --danger-subtle:     #FBEAE9;
+  --danger-subtle-on:  #8C2F2A;
+
+  --info:              var(--raw-info-light);
+  --info-on:           #FFFFFF;
+  --info-subtle:       var(--raw-sky-50);
+  --info-subtle-on:    var(--raw-sky-800);
+
+  /* Tank-type chips */
+  --water-fresh:       var(--raw-fresh-light);
+  --water-fresh-on:    #FFFFFF;
+  --water-salt:        var(--raw-salt-light);
+  --water-salt-on:     #FFFFFF;
+  --water-brackish:    var(--raw-brackish-light);
+  --water-brackish-on: #FFFFFF;
+
+  /* Focus ring */
+  --focus-ring:        0 0 0 3px rgba(27, 122, 113, 0.30);
+}
+
+/* ============================================================
+   DARK MODE — same names, swapped values
+   Triggered by either prefers-color-scheme or explicit
+   [data-theme="dark"] root attribute (user override).
+   ============================================================ */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not(:has([data-theme="light"])) {
+    --surface:           #0B181D;
+    --surface-elevated:  #122229;
+    --surface-sunken:    #081317;
+
+    --on-surface:        #E6ECEE;
+    --on-surface-muted:  #9AAAB0;
+
+    --border:            #1F2F36;
+    --border-strong:     #2C3F47;
+
+    --accent:            var(--raw-teal-300);
+    --accent-hover:      var(--raw-teal-200);
+    --accent-active:     var(--raw-teal-100);
+    --accent-on:         #062722;
+    --accent-subtle:     rgba(88, 181, 171, 0.12);
+    --accent-subtle-on:  var(--raw-teal-200);
+
+    --success:           var(--raw-success-dark);
+    --success-on:        #062722;
+    --success-subtle:    rgba(79, 196, 148, 0.14);
+    --success-subtle-on: #8FE0BB;
+
+    --warning:           var(--raw-warning-dark);
+    --warning-on:        #2A1A05;
+    --warning-subtle:    rgba(240, 169, 88, 0.14);
+    --warning-subtle-on: #F4C48A;
+
+    --danger:            var(--raw-danger-dark);
+    --danger-on:         #2A0A07;
+    --danger-subtle:     rgba(240, 128, 121, 0.14);
+    --danger-subtle-on:  #F4A8A2;
+
+    --info:              var(--raw-info-dark);
+    --info-on:           #07232E;
+    --info-subtle:       rgba(116, 205, 255, 0.14);
+    --info-subtle-on:    #A6DEFF;
+
+    --water-fresh:       var(--raw-fresh-dark);
+    --water-fresh-on:    #062722;
+    --water-salt:        var(--raw-salt-dark);
+    --water-salt-on:     #07232E;
+    --water-brackish:    var(--raw-brackish-dark);
+    --water-brackish-on: #1B2A1B;
+
+    --focus-ring:        0 0 0 3px rgba(88, 181, 171, 0.45);
+
+    --shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.4),
+                    0 1px 1px rgba(0, 0, 0, 0.3);
+    --shadow-md:    0 2px 4px rgba(0, 0, 0, 0.4),
+                    0 4px 12px rgba(0, 0, 0, 0.45);
+    --shadow-lg:    0 8px 16px rgba(0, 0, 0, 0.5),
+                    0 24px 48px rgba(0, 0, 0, 0.55);
+    --shadow-focus: var(--focus-ring);
+  }
+}
+
+/* Explicit user override (data-theme="dark" wins over media query) — works on any element */
+[data-theme="dark"] {
+  --surface:           #0B181D;
+  --surface-elevated:  #122229;
+  --surface-sunken:    #081317;
+  --on-surface:        #E6ECEE;
+  --on-surface-muted:  #9AAAB0;
+  --border:            #1F2F36;
+  --border-strong:     #2C3F47;
+  --accent:            var(--raw-teal-300);
+  --accent-hover:      var(--raw-teal-200);
+  --accent-active:     var(--raw-teal-100);
+  --accent-on:         #062722;
+  --accent-subtle:     rgba(88, 181, 171, 0.12);
+  --accent-subtle-on:  var(--raw-teal-200);
+  --success:           var(--raw-success-dark);
+  --success-on:        #062722;
+  --success-subtle:    rgba(79, 196, 148, 0.14);
+  --success-subtle-on: #8FE0BB;
+  --warning:           var(--raw-warning-dark);
+  --warning-on:        #2A1A05;
+  --warning-subtle:    rgba(240, 169, 88, 0.14);
+  --warning-subtle-on: #F4C48A;
+  --danger:            var(--raw-danger-dark);
+  --danger-on:         #2A0A07;
+  --danger-subtle:     rgba(240, 128, 121, 0.14);
+  --danger-subtle-on:  #F4A8A2;
+  --info:              var(--raw-info-dark);
+  --info-on:           #07232E;
+  --info-subtle:       rgba(116, 205, 255, 0.14);
+  --info-subtle-on:    #A6DEFF;
+  --water-fresh:       var(--raw-fresh-dark);
+  --water-fresh-on:    #062722;
+  --water-salt:        var(--raw-salt-dark);
+  --water-salt-on:     #07232E;
+  --water-brackish:    var(--raw-brackish-dark);
+  --water-brackish-on: #1B2A1B;
+  --focus-ring:        0 0 0 3px rgba(88, 181, 171, 0.45);
+  --shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.4),
+                  0 1px 1px rgba(0, 0, 0, 0.3);
+  --shadow-md:    0 2px 4px rgba(0, 0, 0, 0.4),
+                  0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg:    0 8px 16px rgba(0, 0, 0, 0.5),
+                  0 24px 48px rgba(0, 0, 0, 0.55);
+  --shadow-focus: var(--focus-ring);
+}
+
+/* Explicit light override — re-applies the light palette to any subtree.
+   Necessary because frames carry data-theme="light" but the OS may be in dark mode,
+   and the cascade would otherwise inherit dark values from the document root.
+   The --raw-success / --raw-warning / etc. var() references here resolve via the
+   aliases added at the top of :root — that's the bug fix for v3's missing definitions. */
+[data-theme="light"] {
+  --surface:           var(--raw-ink-50);
+  --surface-elevated:  #FFFFFF;
+  --surface-sunken:    #ECF0F2;
+  --on-surface:        var(--raw-ink-900);
+  --on-surface-muted:  var(--raw-ink-500);
+  --border:            var(--raw-ink-200);
+  --border-strong:     var(--raw-ink-300);
+  --accent:            var(--raw-teal-500);
+  --accent-hover:      var(--raw-teal-600);
+  --accent-active:     var(--raw-teal-700);
+  --accent-on:         #FFFFFF;
+  --accent-subtle:     var(--raw-teal-50);
+  --accent-subtle-on:  var(--raw-teal-700);
+  --success:           var(--raw-success);
+  --success-on:        #FFFFFF;
+  --success-subtle:    var(--raw-success-subtle);
+  --success-subtle-on: var(--raw-success-subtle-on);
+  --warning:           var(--raw-warning);
+  --warning-on:        #2A1A05;
+  --warning-subtle:    var(--raw-warning-subtle);
+  --warning-subtle-on: var(--raw-warning-subtle-on);
+  --warning-on-bg:     var(--raw-warning-subtle-on);
+  --danger:            var(--raw-danger);
+  --danger-on:         #FFFFFF;
+  --danger-subtle:     var(--raw-danger-subtle);
+  --danger-subtle-on:  var(--raw-danger-subtle-on);
+  --info:              var(--raw-info);
+  --info-on:           #FFFFFF;
+  --info-subtle:       var(--raw-info-subtle);
+  --info-subtle-on:    var(--raw-info-subtle-on);
+  --water-fresh:       var(--raw-fresh);
+  --water-fresh-on:    #FFFFFF;
+  --water-salt:        var(--raw-salt);
+  --water-salt-on:     #FFFFFF;
+  --water-brackish:    var(--raw-brackish);
+  --water-brackish-on: #1B2A1B;
+  --focus-ring:        0 0 0 3px rgba(31, 122, 140, 0.35);
+  --shadow-sm:    0 1px 2px rgba(7, 24, 28, 0.06),
+                  0 1px 1px rgba(7, 24, 28, 0.04);
+  --shadow-md:    0 2px 4px rgba(7, 24, 28, 0.06),
+                  0 4px 12px rgba(7, 24, 28, 0.08);
+  --shadow-lg:    0 8px 16px rgba(7, 24, 28, 0.10),
+                  0 24px 48px rgba(7, 24, 28, 0.14);
+  --shadow-focus: var(--focus-ring);
+}

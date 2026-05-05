@@ -1,0 +1,13 @@
+# Copy to docker-compose.override.yml and edit for local dev.
+# This file is for things you don't want to commit.
+
+services:
+  web:
+    volumes:
+      - ./src/safeharbor:/app/src/safeharbor:ro
+    environment:
+      LOG_LEVEL: DEBUG
+
+  worker:
+    volumes:
+      - ./src/safeharbor:/app/src/safeharbor:ro
