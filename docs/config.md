@@ -12,6 +12,8 @@ Safe Harbor reads configuration from environment variables. Phase 2a introduces 
 | `SENTRY_DSN` | No | empty | Enables Sentry error reporting when set. Safe Harbor does not initialize Sentry when this is blank. |
 | `SENTRY_TRACES_SAMPLE_RATE` | No | `0.0` | Sentry transaction sampling rate. `0.0` records errors only; set a value from `0.0` to `1.0` to enable performance traces. |
 | `LOG_LEVEL` | No | `INFO` | Python application log level. Production logs are JSON-formatted. |
+| `TRUST_PROXY_HEADERS` | No | `1` | Enables one-hop reverse-proxy header trust for Cloudflare Tunnel and similar trusted proxies. Set to `0` when running without a trusted proxy. |
+| `FORWARDED_ALLOW_IPS` | No | `*` | Gunicorn forwarded-IP allowlist. The default trusts all upstream proxy IPs; tighten this when your proxy IPs are static. |
 
 ## Notes
 

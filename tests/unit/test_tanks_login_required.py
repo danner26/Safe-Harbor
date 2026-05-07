@@ -35,7 +35,12 @@ def assert_login_redirect(response, expected_next: str) -> None:  # type: ignore
     location = response.headers["Location"]
     parsed = urlparse(location)
     assert parsed.path == "/login"
-    assert parse_qs(parsed.query)["next"] == [expected_next]
+    qs = parse_qs(parsed.query)
+    next_values = qs.get("next")
+    assert next_values is not None
+    next_target = urlparse(next_values[0])
+    assert next_target.path == expected_next
+    assert next_target.query == ""
 
 
 def assert_explicit_login_required(view_name: str) -> None:
@@ -46,24 +51,24 @@ def assert_explicit_login_required(view_name: str) -> None:
 def test_new_tank_requires_login(client: FlaskClient) -> None:
     assert_explicit_login_required("new_tank")
     response = client.get("/tanks/new")
-    assert_login_redirect(response, "/tanks/new?")
+    assert_login_redirect(response, "/tanks/new")
 
 
 def test_create_tank_requires_login(client: FlaskClient) -> None:
     assert_explicit_login_required("create_tank")
     response = client.post("/tanks")
-    assert_login_redirect(response, "/tanks?")
+    assert_login_redirect(response, "/tanks")
 
 
 def test_edit_tank_requires_login(client: FlaskClient) -> None:
     assert_explicit_login_required("edit")
     tank_id = "00000000-0000-0000-0000-000000000001"
     response = client.get(f"/tanks/{tank_id}/edit")
-    assert_login_redirect(response, f"/tanks/{tank_id}/edit?")
+    assert_login_redirect(response, f"/tanks/{tank_id}/edit")
 
 
 def test_update_tank_requires_login(client: FlaskClient) -> None:
     assert_explicit_login_required("update_tank")
     tank_id = "00000000-0000-0000-0000-000000000001"
     response = client.post(f"/tanks/{tank_id}")
-    assert_login_redirect(response, f"/tanks/{tank_id}?")
+    assert_login_redirect(response, f"/tanks/{tank_id}")
