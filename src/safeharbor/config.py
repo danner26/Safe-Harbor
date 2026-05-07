@@ -19,6 +19,16 @@ from datetime import timedelta
 from typing import ClassVar
 
 
+def _safe_float_env(name: str, default: float) -> float:
+    raw = os.getenv(name)
+    if raw is None or raw == "":
+        return default
+    try:
+        return float(raw)
+    except ValueError:
+        return default
+
+
 class BaseConfig:
     """Common defaults; subclasses override per environment."""
 
@@ -49,9 +59,16 @@ class BaseConfig:
     STORAGE_DIR: ClassVar[str] = os.getenv("STORAGE_DIR", "./uploads")
 
     LOG_LEVEL: ClassVar[str] = os.getenv("LOG_LEVEL", "INFO")
+    TRUST_PROXY_HEADERS: ClassVar[bool] = os.getenv("TRUST_PROXY_HEADERS", "1") not in (
+        "",
+        "0",
+        "false",
+        "False",
+    )
     SENTRY_DSN: ClassVar[str] = os.getenv("SENTRY_DSN", "")
-    SENTRY_TRACES_SAMPLE_RATE: ClassVar[float] = float(
-        os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.0")
+    SENTRY_TRACES_SAMPLE_RATE: ClassVar[float] = _safe_float_env(
+        "SENTRY_TRACES_SAMPLE_RATE",
+        0.0,
     )
 
     WTF_CSRF_ENABLED: ClassVar[bool] = True
@@ -94,6 +111,9 @@ class ProdConfig(BaseConfig):
         secret = os.getenv("SECRET_KEY", "change-me-in-prod")
         if secret in ("", "change-me-in-prod"):
             raise RuntimeError("SECRET_KEY must be set to a real secret in production")
+        rate = cls.SENTRY_TRACES_SAMPLE_RATE
+        if not (0.0 <= rate <= 1.0):
+            raise RuntimeError(f"SENTRY_TRACES_SAMPLE_RATE must be in [0.0, 1.0]; got {rate}")
         for name in ("DATABASE_URL", "REDIS_URL", "SMTP_HOST", "STORAGE_DIR"):
             if not os.getenv(name):
                 raise RuntimeError(f"{name} must be set in production")

@@ -162,6 +162,8 @@ def _init_extensions(app: Flask) -> None:
 
 
 def _wire_proxy_fix(app: Flask) -> None:
+    if not app.config["TRUST_PROXY_HEADERS"]:
+        return
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)  # type: ignore[method-assign]
 
 

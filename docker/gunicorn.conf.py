@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from datetime import UTC, datetime
 from typing import Any
@@ -14,7 +15,7 @@ bind = "0.0.0.0:8000"
 workers = 2
 accesslog = "-"
 errorlog = "-"
-forwarded_allow_ips = "*"
+forwarded_allow_ips = os.environ.get("FORWARDED_ALLOW_IPS", "*")
 
 _TOKEN_PATH_PATTERNS = (
     re.compile(r"^(/register/)[^/?#]+"),

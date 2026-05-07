@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   release:
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
 
     steps:
