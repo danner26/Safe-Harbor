@@ -48,6 +48,7 @@ RUN mkdir -p /data/uploads && chown -R safeharbor:safeharbor /data
 
 WORKDIR /app
 COPY --from=builder --chown=safeharbor:safeharbor /app /app
+COPY --chown=safeharbor:safeharbor docker/gunicorn.conf.py /app/docker/gunicorn.conf.py
 COPY --chown=safeharbor:safeharbor docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
@@ -56,4 +57,4 @@ USER safeharbor
 EXPOSE 8000
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--access-logfile", "-", "safeharbor.wsgi:app"]
+CMD ["gunicorn", "--config", "/app/docker/gunicorn.conf.py", "safeharbor.wsgi:app"]
