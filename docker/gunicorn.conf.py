@@ -62,7 +62,11 @@ class JsonAccessLogger(Logger):
             "remote_addr": environ.get("REMOTE_ADDR", "-"),
             "user_agent": _header(req, "User-Agent"),
             "referer": _redact_referer(referer),
-            "duration_ms": int(request_time.total_seconds() * 1000),
+            "duration_ms": int(
+                request_time.total_seconds() * 1000
+                if hasattr(request_time, "total_seconds")
+                else float(request_time) * 1000
+            ),
         }
         self.access_log.info(json.dumps(record, separators=(",", ":")))
 
