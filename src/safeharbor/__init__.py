@@ -16,6 +16,7 @@ from pathlib import Path
 from flask import Flask
 from redis import Redis
 from rq import Queue
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from safeharbor import extensions
 from safeharbor.cli import register_cli
@@ -41,6 +42,7 @@ def create_app(config_name: str | None = None) -> Flask:
     _configure_logging(app)
     _configure_visual_admin_password(app)
     _init_extensions(app)
+    _wire_proxy_fix(app)
     _register_blueprints(app)
     _register_template_globals(app)
     register_cli(app)
@@ -155,6 +157,10 @@ def _init_extensions(app: Flask) -> None:
 
     extensions.redis_conn = Redis.from_url(app.config["REDIS_URL"])
     extensions.default_queue = Queue(connection=extensions.redis_conn)
+
+
+def _wire_proxy_fix(app: Flask) -> None:
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)  # type: ignore[method-assign]
 
 
 def _register_template_globals(app: Flask) -> None:
