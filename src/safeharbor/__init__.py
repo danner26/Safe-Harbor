@@ -34,6 +34,7 @@ def create_app(config_name: str | None = None) -> Flask:
 
     app = Flask(__name__, instance_relative_config=False)
     app.config.from_object(config_cls)
+    app.config["FLASK_CONFIG"] = resolved
 
     if config_cls is ProdConfig:
         ProdConfig.validate()
@@ -138,6 +139,7 @@ def _init_extensions(app: Flask) -> None:
     extensions.migrate.init_app(app, extensions.db)
     extensions.login_manager.init_app(app)
     extensions.csrf.init_app(app)
+    extensions.init_sentry(app)
 
     @extensions.login_manager.user_loader  # type: ignore
     def _load_user(user_id: str) -> User | None:  # type: ignore[name-defined]  # noqa: F821
