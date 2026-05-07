@@ -16,6 +16,7 @@ from pathlib import Path
 from flask import Flask
 from redis import Redis
 from rq import Queue
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from safeharbor import extensions
 from safeharbor.cli import register_cli
@@ -33,6 +34,7 @@ def create_app(config_name: str | None = None) -> Flask:
 
     app = Flask(__name__, instance_relative_config=False)
     app.config.from_object(config_cls)
+    app.config["FLASK_CONFIG"] = resolved
 
     if config_cls is ProdConfig:
         ProdConfig.validate()
@@ -41,6 +43,7 @@ def create_app(config_name: str | None = None) -> Flask:
     _configure_logging(app)
     _configure_visual_admin_password(app)
     _init_extensions(app)
+    _wire_proxy_fix(app)
     _register_blueprints(app)
     _register_template_globals(app)
     register_cli(app)
@@ -136,6 +139,7 @@ def _init_extensions(app: Flask) -> None:
     extensions.migrate.init_app(app, extensions.db)
     extensions.login_manager.init_app(app)
     extensions.csrf.init_app(app)
+    extensions.init_sentry(app)
 
     @extensions.login_manager.user_loader  # type: ignore
     def _load_user(user_id: str) -> User | None:  # type: ignore[name-defined]  # noqa: F821
@@ -155,6 +159,12 @@ def _init_extensions(app: Flask) -> None:
 
     extensions.redis_conn = Redis.from_url(app.config["REDIS_URL"])
     extensions.default_queue = Queue(connection=extensions.redis_conn)
+
+
+def _wire_proxy_fix(app: Flask) -> None:
+    if not app.config["TRUST_PROXY_HEADERS"]:
+        return
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)  # type: ignore[method-assign]
 
 
 def _register_template_globals(app: Flask) -> None:

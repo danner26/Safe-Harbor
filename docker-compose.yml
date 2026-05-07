@@ -64,6 +64,17 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  cloudflared:
+    image: cloudflare/cloudflared:2024.10.0
+    profiles: ["tunnel"]
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: "${TUNNEL_TOKEN}"
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+
   mailhog:
     image: mailhog/mailhog:latest
     profiles: ["dev"]
