@@ -1,0 +1,53 @@
+site_name: Safe Harbor
+site_description: Open-source aquarium tracker
+site_url: https://danner26.github.io/Safe-Harbor/
+repo_url: https://github.com/danner26/Safe-Harbor
+repo_name: danner26/Safe-Harbor
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Install: install.md
+  - Configuration: config.md
+  - Deployment: deploy.md
+  - Observability: observability.md
+  - Updates: update.md
+  # 2b: Backups: backups.md
+  # 2b: Restore: restore.md
+  # 2c: Troubleshooting: troubleshooting.md
+  # 2c: Architecture: architecture.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - attr_list
+  - md_in_html
+  - toc
+
+plugins:
+  - search
