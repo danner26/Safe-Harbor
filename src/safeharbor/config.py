@@ -50,6 +50,9 @@ class BaseConfig:
 
     LOG_LEVEL: ClassVar[str] = os.getenv("LOG_LEVEL", "INFO")
     SENTRY_DSN: ClassVar[str] = os.getenv("SENTRY_DSN", "")
+    SENTRY_TRACES_SAMPLE_RATE: ClassVar[float] = float(
+        os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.0")
+    )
 
     WTF_CSRF_ENABLED: ClassVar[bool] = True
     SESSION_COOKIE_SECURE: ClassVar[bool] = False
