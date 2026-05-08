@@ -20,6 +20,7 @@ def test_dev_config_has_debug_true() -> None:
 def test_test_config_has_testing_true() -> None:
     assert TestConfig.TESTING is True
     assert TestConfig.WTF_CSRF_ENABLED is False  # forms posted in tests w/o tokens
+    assert TestConfig.WTF_CSRF_SSL_STRICT is False
 
 
 def test_prod_config_requires_secret_key(monkeypatch: pytest.MonkeyPatch) -> None:

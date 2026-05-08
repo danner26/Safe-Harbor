@@ -97,6 +97,7 @@ class TestConfig(BaseConfig):
     TESTING: ClassVar[bool] = True
     ENABLE_DEV_ROUTES: ClassVar[bool] = True
     WTF_CSRF_ENABLED: ClassVar[bool] = False
+    WTF_CSRF_SSL_STRICT: ClassVar[bool] = False
     SQLALCHEMY_DATABASE_URI: ClassVar[str] = os.getenv(
         "TEST_DATABASE_URL",
         "postgresql+psycopg://safeharbor:safeharbor@localhost:5432/safeharbor_test",
