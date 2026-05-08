@@ -10,12 +10,14 @@ from flask import current_app
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from passlib.exc import PasswordValueError, UnknownHashError
 from passlib.hash import argon2
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from safeharbor.extensions import db
 from safeharbor.models.account import User
 from safeharbor.models.base import new_id
 from safeharbor.models.invite import Invite, InviteKind
+
+_FIRST_ADMIN_LOCK_KEY = 5_207_430_503_669_129_631
 
 
 def hash_password(plaintext: str) -> str:
@@ -45,8 +47,17 @@ def install_preferred_units() -> str:
     return preferred_units or "imperial"
 
 
+def _lock_first_admin_creation() -> None:
+    """Serialize first-admin creation on PostgreSQL for this transaction."""
+    bind = db.session.get_bind()
+    if bind.dialect.name != "postgresql":
+        return
+    db.session.execute(select(func.pg_advisory_xact_lock(_FIRST_ADMIN_LOCK_KEY)))
+
+
 def create_first_admin(email: str, password: str, preferred_units: str) -> User:
     """Create the bootstrap superuser in the current transaction."""
+    _lock_first_admin_creation()
     if db.session.scalar(select(User).limit(1)) is not None:
         raise ValueError("a user already exists")
 
