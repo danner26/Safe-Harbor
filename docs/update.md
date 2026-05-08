@@ -16,12 +16,17 @@ docker compose up -d web
 Production deployments should pin a known release instead of tracking a moving tag:
 
 ```bash
-printf "SAFEHARBOR_VERSION=v1.0.0\n" >> .env
+# Set or replace SAFEHARBOR_VERSION in .env (POSIX sh; works on Linux + macOS).
+if grep -q '^SAFEHARBOR_VERSION=' .env; then
+  sed -i.bak 's/^SAFEHARBOR_VERSION=.*/SAFEHARBOR_VERSION=v1.0.0/' .env && rm .env.bak
+else
+  printf 'SAFEHARBOR_VERSION=v1.0.0\n' >> .env
+fi
 docker compose pull web
 docker compose up -d web
 ```
 
-Docker Compose reads `.env` automatically from the compose project directory. This assumes the deployment is already configured for production, including a real `SECRET_KEY` and any compose override needed for production mode; `SAFEHARBOR_VERSION` only controls the image tag. Pinning keeps production rollouts intentional and makes rollback decisions clearer. To roll forward, update `SAFEHARBOR_VERSION` in `.env` to the next release tag, pull the image, and restart the service.
+Docker Compose reads `.env` automatically from the compose project directory. This assumes the deployment is already configured for production, including a real `SECRET_KEY` and any compose override needed for production mode; `SAFEHARBOR_VERSION` only controls the image tag. Pinning keeps production rollouts intentional and makes rollback decisions clearer. The recipe above is idempotent across upgrades. If you edit `.env` by hand, confirm that only one `SAFEHARBOR_VERSION=` line exists. To roll forward, update `SAFEHARBOR_VERSION` in `.env` to the next release tag, pull the image, and restart the service.
 
 For the current source-built development and staging compose file, rebuild the local image instead:
 
