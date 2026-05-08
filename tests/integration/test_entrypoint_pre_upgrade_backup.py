@@ -194,6 +194,21 @@ def test_current_revision_at_heads_skips_pre_upgrade_backup(tmp_path: Path) -> N
     _assert_no_backup_command(log_lines)
 
 
+def test_current_revision_at_head_suffix_skips_pre_upgrade_backup(
+    tmp_path: Path,
+) -> None:
+    result, backup_dir, upgrade_marker = _run_entrypoint(
+        tmp_path, current="headrev (head)", heads="headrev"
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert (backup_dir / "requested-output.txt").exists() is False
+    assert upgrade_marker.read_text(encoding="utf-8") == "upgrade-ran\n"
+    log_lines = _log_lines(tmp_path)
+    _assert_core_flask_commands_ran(log_lines)
+    _assert_no_backup_command(log_lines)
+
+
 def test_empty_current_revision_skips_pre_upgrade_backup(tmp_path: Path) -> None:
     result, backup_dir, upgrade_marker = _run_entrypoint(tmp_path, current="")
 
