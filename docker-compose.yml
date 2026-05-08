@@ -55,6 +55,8 @@ services:
       DATABASE_URL: postgresql+psycopg://safeharbor:safeharbor@postgres:5432/safeharbor
       REDIS_URL: redis://redis:6379/0
     command: ["rq", "worker", "--url", "redis://redis:6379/0", "default"]
+    volumes:
+      - ./backups:/backups:rw
     depends_on:
       postgres:
         condition: service_healthy
