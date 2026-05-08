@@ -24,10 +24,7 @@ services:
     restart: unless-stopped
 
   web:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    image: safeharbor:dev
+    image: ghcr.io/danner26/safeharbor:${SAFEHARBOR_VERSION:-latest}
     env_file: .env
     environment:
       FLASK_CONFIG: development
@@ -37,6 +34,7 @@ services:
       - "8000:8000"
     volumes:
       - uploads:/data/uploads
+      - ./backups:/backups:rw
     depends_on:
       postgres:
         condition: service_healthy
@@ -50,7 +48,7 @@ services:
     restart: unless-stopped
 
   worker:
-    image: safeharbor:dev
+    image: ghcr.io/danner26/safeharbor:${SAFEHARBOR_VERSION:-latest}
     env_file: .env
     environment:
       FLASK_CONFIG: development
@@ -65,7 +63,7 @@ services:
     restart: unless-stopped
 
   backups:
-    image: safeharbor:dev
+    image: ghcr.io/danner26/safeharbor:${SAFEHARBOR_VERSION:-latest}
     profiles: ["backup"]
     command: ["tail", "-f", "/dev/null"]
     env_file: .env
