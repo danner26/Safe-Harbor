@@ -45,6 +45,23 @@ def install_preferred_units() -> str:
     return preferred_units or "imperial"
 
 
+def create_first_admin(email: str, password: str, preferred_units: str) -> User:
+    """Create the bootstrap superuser in the current transaction."""
+    if db.session.scalar(select(User).limit(1)) is not None:
+        raise ValueError("a user already exists")
+
+    user = User(
+        email=email.strip().lower(),
+        password_hash=hash_password(password),
+        is_active=True,
+        is_superuser=True,
+        preferred_units=preferred_units,
+    )
+    db.session.add(user)
+    db.session.flush()
+    return user
+
+
 # ---------------------------------------------------------------------------
 # Token mint / verify (Task 4)
 # ---------------------------------------------------------------------------

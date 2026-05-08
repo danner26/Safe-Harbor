@@ -288,7 +288,7 @@ def create_admin() -> None:
 
     from safeharbor.extensions import db
     from safeharbor.models.account import User
-    from safeharbor.services.auth_service import hash_password
+    from safeharbor.services.auth_service import create_first_admin
 
     if db.session.scalar(select(User).limit(1)) is not None:
         click.echo(
@@ -314,14 +314,15 @@ def create_admin() -> None:
         click.echo("Password must be at least 10 characters.", err=True)
         raise click.exceptions.Exit(code=1)
 
-    u = User(
-        email=email.strip().lower(),
-        password_hash=hash_password(password),
-        is_active=True,
-        is_superuser=True,
-        preferred_units=preferred_units,
-    )
-    db.session.add(u)
+    try:
+        u = create_first_admin(email, password, preferred_units)
+    except ValueError:
+        click.echo(
+            "Refusing: a user already exists. Use the web admin invite flow at /admin/invites.",
+            err=True,
+        )
+        raise click.exceptions.Exit(code=1) from None
+
     db.session.commit()
     click.echo(f"Created superuser {u.email} (id: {u.id})")
 
