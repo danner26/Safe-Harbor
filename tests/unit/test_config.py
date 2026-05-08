@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+import os
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 
 from safeharbor.config import DevConfig, ProdConfig, TestConfig, get_config
@@ -15,6 +20,7 @@ def test_dev_config_has_debug_true() -> None:
 def test_test_config_has_testing_true() -> None:
     assert TestConfig.TESTING is True
     assert TestConfig.WTF_CSRF_ENABLED is False  # forms posted in tests w/o tokens
+    assert TestConfig.WTF_CSRF_SSL_STRICT is False
 
 
 def test_prod_config_requires_secret_key(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -47,12 +53,88 @@ def test_base_config_remember_cookie_duration_is_30_days() -> None:
 
 
 def test_prod_config_prefers_https_url_scheme() -> None:
-    from safeharbor.config import ProdConfig
+    env = {**os.environ}
+    env.pop("PREFERRED_URL_SCHEME", None)
+    command = (
+        "from safeharbor.config import BaseConfig, ProdConfig; "
+        "print(BaseConfig.PREFERRED_URL_SCHEME, ProdConfig.PREFERRED_URL_SCHEME)"
+    )
 
-    assert ProdConfig.PREFERRED_URL_SCHEME == "https"
+    result = subprocess.run(
+        [sys.executable, "-c", command],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.stdout.strip() == "https https"
 
 
-def test_dev_config_prefers_http_url_scheme() -> None:
-    from safeharbor.config import DevConfig
+def test_dev_config_prefers_https_url_scheme() -> None:
+    env = {**os.environ}
+    env.pop("PREFERRED_URL_SCHEME", None)
+    command = (
+        "from safeharbor.config import BaseConfig, DevConfig; "
+        "print(BaseConfig.PREFERRED_URL_SCHEME, DevConfig.PREFERRED_URL_SCHEME)"
+    )
 
-    assert DevConfig.PREFERRED_URL_SCHEME == "http"
+    result = subprocess.run(
+        [sys.executable, "-c", command],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.stdout.strip() == "https https"
+
+
+def test_server_name_and_preferred_url_scheme_flow_from_env_into_app_config(
+    tmp_path: Path,
+) -> None:
+    env = {
+        **os.environ,
+        "SERVER_NAME": "example.test",
+        "PREFERRED_URL_SCHEME": "http",
+        "UPLOAD_DIR": str(tmp_path),
+    }
+    command = (
+        "from safeharbor import create_app; "
+        "app = create_app('testing'); "
+        "print(app.config['SERVER_NAME'], app.config['PREFERRED_URL_SCHEME'])"
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-c", command],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.stdout.strip() == "example.test http"
+
+
+def test_empty_server_name_becomes_none_and_url_scheme_defaults_to_https(tmp_path: Path) -> None:
+    env = {
+        **os.environ,
+        "SERVER_NAME": "",
+        "UPLOAD_DIR": str(tmp_path),
+    }
+    env.pop("PREFERRED_URL_SCHEME", None)
+    command = (
+        "from safeharbor import create_app; "
+        "app = create_app('testing'); "
+        "print(repr(app.config['SERVER_NAME']), app.config['PREFERRED_URL_SCHEME'])"
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-c", command],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.stdout.strip() == "None https"

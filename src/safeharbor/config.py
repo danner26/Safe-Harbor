@@ -84,7 +84,8 @@ class BaseConfig:
     REMEMBER_COOKIE_HTTPONLY: ClassVar[bool] = True
     REMEMBER_COOKIE_SAMESITE: ClassVar[str] = "Lax"
 
-    PREFERRED_URL_SCHEME: ClassVar[str] = "http"
+    SERVER_NAME: ClassVar[str | None] = os.getenv("SERVER_NAME") or None
+    PREFERRED_URL_SCHEME: ClassVar[str] = os.getenv("PREFERRED_URL_SCHEME") or "https"
 
 
 class DevConfig(BaseConfig):
@@ -96,6 +97,7 @@ class TestConfig(BaseConfig):
     TESTING: ClassVar[bool] = True
     ENABLE_DEV_ROUTES: ClassVar[bool] = True
     WTF_CSRF_ENABLED: ClassVar[bool] = False
+    WTF_CSRF_SSL_STRICT: ClassVar[bool] = False
     SQLALCHEMY_DATABASE_URI: ClassVar[str] = os.getenv(
         "TEST_DATABASE_URL",
         "postgresql+psycopg://safeharbor:safeharbor@localhost:5432/safeharbor_test",
@@ -104,7 +106,6 @@ class TestConfig(BaseConfig):
 
 class ProdConfig(BaseConfig):
     SESSION_COOKIE_SECURE: ClassVar[bool] = True
-    PREFERRED_URL_SCHEME: ClassVar[str] = "https"
     REMEMBER_COOKIE_SECURE: ClassVar[bool] = True
 
     @classmethod

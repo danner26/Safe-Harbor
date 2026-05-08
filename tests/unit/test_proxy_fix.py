@@ -41,7 +41,7 @@ def test_proxy_fix_honors_x_forwarded_host(proxy_app: Flask) -> None:
 
     response = client.get("/proxy-fix-probe", headers={"X-Forwarded-Host": "app.example.test"})
 
-    assert response.text == "http|app.example.test"
+    assert response.text == "https|app.example.test"
 
 
 def test_proxy_fix_default_scheme_without_header(proxy_app: Flask) -> None:
@@ -49,4 +49,4 @@ def test_proxy_fix_default_scheme_without_header(proxy_app: Flask) -> None:
 
     response = client.get("/proxy-fix-probe")
 
-    assert response.text == "http|localhost"
+    assert response.text == "https|localhost"

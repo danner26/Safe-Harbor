@@ -1,0 +1,16 @@
+# Development override for contributors building the app image locally.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# Alternative: COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml docker compose up --build
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: safeharbor:dev
+
+  worker:
+    image: safeharbor:dev
+
+  backups:
+    image: safeharbor:dev
