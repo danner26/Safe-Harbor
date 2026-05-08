@@ -203,10 +203,12 @@ def _register_blueprints(app: Flask) -> None:
     from safeharbor.blueprints.home import home_bp
     from safeharbor.blueprints.measurements import measurements_bp
     from safeharbor.blueprints.settings import settings_bp
+    from safeharbor.blueprints.setup import setup_bp
     from safeharbor.blueprints.tanks import tanks_bp
 
     app.register_blueprint(home_bp)
     app.register_blueprint(health_bp)
+    app.register_blueprint(setup_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(animals_bp)
     app.register_blueprint(tanks_bp)
@@ -215,7 +217,39 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(settings_bp)
     if app.config["ENABLE_DEV_ROUTES"]:
         app.register_blueprint(dev_bp)
+    _install_setup_redirect_hook(app)
     _install_login_required_hook(app)
+
+
+def _install_setup_redirect_hook(app: Flask) -> None:
+    """Redirect first-run traffic to setup until an administrator exists."""
+    from flask import redirect, request, url_for
+    from sqlalchemy import select
+    from sqlalchemy.exc import ProgrammingError
+
+    from safeharbor.extensions import db
+    from safeharbor.models.account import User
+
+    @app.before_request
+    def _redirect_to_setup_if_unconfigured():  # type: ignore[no-untyped-def]
+        public_endpoints = {"setup.show_or_create", "static", "health.healthz"}
+        if request.endpoint in public_endpoints:
+            return None
+        if request.endpoint is not None and request.endpoint.startswith("static"):
+            return None
+        view = app.view_functions.get(request.endpoint or "")
+        if view is not None and getattr(view, "_is_public", False):
+            return None
+        try:
+            has_user = db.session.scalar(select(User.id).limit(1)) is not None
+        except ProgrammingError:
+            if not app.testing:
+                raise
+            db.session.rollback()
+            return None
+        if not has_user:
+            return redirect(url_for("setup.show_or_create"))
+        return None
 
 
 def _install_login_required_hook(app: Flask) -> None:
