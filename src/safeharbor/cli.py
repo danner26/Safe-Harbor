@@ -5,7 +5,11 @@ Phase 0 ships an empty group; subsequent phases add `seed`, `import-csv`, etc.
 
 from __future__ import annotations
 
+import os
 import re
+import subprocess
+import tarfile
+import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -82,6 +86,64 @@ def _default_output_path() -> str:
 
 
 safeharbor_cli = AppGroup("safeharbor", help="Safe Harbor management commands.")
+
+
+@safeharbor_cli.command("backup")
+@click.option(
+    "--output",
+    default=None,
+    type=str,
+    help="Output tarball path (default: /backups/safeharbor-backup-<UTC>.tar)",
+)
+def backup_cmd(output: str | None) -> None:
+    """Create a database and uploads backup tarball."""
+    from flask import current_app
+
+    output_path = output or _default_output_path()
+    click.echo(f"writing to {output_path}")
+
+    uri = current_app.config["SQLALCHEMY_DATABASE_URI"]
+    host, port, user, password, dbname = _parse_database_url(uri)
+    upload_dir = Path(current_app.config["UPLOAD_DIR"])
+
+    with tempfile.TemporaryDirectory() as td:
+        td_path = Path(td)
+        subprocess.run(
+            [
+                "pg_dump",
+                "-F",
+                "c",
+                "-h",
+                host,
+                "-p",
+                str(port),
+                "-U",
+                user,
+                "-d",
+                dbname,
+                "-f",
+                str(td_path / "db.dump"),
+            ],
+            env={**os.environ, "PGPASSWORD": password},
+            check=True,
+        )
+
+        with tarfile.open(f"{output_path}.tmp", "w") as tf:
+            tf.add(str(td_path / "db.dump"), arcname="db.dump")
+            if upload_dir.exists():
+                tf.add(str(upload_dir), arcname="uploads")
+
+        os.replace(f"{output_path}.tmp", output_path)
+
+    deleted = _apply_retention(
+        Path(output_path).parent,
+        int(os.environ.get("BACKUP_RETENTION_DAILY", "7")),
+        int(os.environ.get("BACKUP_RETENTION_WEEKLY", "4")),
+    )
+    if deleted:
+        click.echo(f"pruned {len(deleted)} old tarballs")
+
+    click.echo(f"wrote {output_path} ({Path(output_path).stat().st_size} bytes)")
 
 
 @safeharbor_cli.command("hello")
