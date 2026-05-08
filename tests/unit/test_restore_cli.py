@@ -72,6 +72,17 @@ def test_validate_tarball_structure_passes_on_good_tarball(tmp_path: Path) -> No
     _validate_tarball_structure(str(path))
 
 
+def test_validate_tarball_structure_passes_on_empty_uploads_dir(tmp_path: Path) -> None:
+    path = tmp_path / "restore-empty-uploads.tar"
+    with tarfile.open(path, "w") as tf:
+        _write_member(tf, "db.dump", b"dump")
+        info = tarfile.TarInfo("uploads")
+        info.type = tarfile.DIRTYPE
+        tf.addfile(info)
+
+    assert _validate_tarball_structure(str(path)) == 0
+
+
 def test_validate_tarball_structure_fails_on_missing_db_dump(tmp_path: Path) -> None:
     path = _create_restore_tarball(tmp_path, include_db_dump=False)
 
@@ -94,7 +105,7 @@ def test_validate_tarball_structure_fails_on_non_tarball(tmp_path: Path) -> None
         _validate_tarball_structure(str(path))
 
 
-def test_dry_run_does_not_call_pg_restore(restore_app: Flask, tmp_path: Path) -> None:
+def test_dry_run_does_not_call_destructive_pg_restore(restore_app: Flask, tmp_path: Path) -> None:
     path = _create_restore_tarball(tmp_path)
 
     with patch("safeharbor.cli.subprocess.run", return_value=_pg_restore_list_result()) as run:

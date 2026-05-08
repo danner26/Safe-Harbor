@@ -86,7 +86,7 @@ def _default_output_path() -> str:
     return f"/backups/safeharbor-backup-{timestamp}.tar"
 
 
-def _validate_tarball_structure(path: str) -> tuple[int, int]:
+def _validate_tarball_structure(path: str) -> int:
     """Validate that a restore archive contains a database dump and uploads."""
     try:
         with tarfile.open(path, "r") as tf:
@@ -98,14 +98,16 @@ def _validate_tarball_structure(path: str) -> tuple[int, int]:
     upload_file_count = sum(
         1 for member in members if member.name.startswith("uploads/") and member.isfile()
     )
-    has_uploads = any(member.name.startswith("uploads/") for member in members)
+    has_uploads = any(
+        member.name == "uploads" or member.name.startswith("uploads/") for member in members
+    )
 
     if not has_db_dump:
         raise click.ClickException("Restore archive is missing required db.dump member")
     if not has_uploads:
         raise click.ClickException("Restore archive is missing required uploads/ member")
 
-    return 0, upload_file_count
+    return upload_file_count
 
 
 safeharbor_cli = AppGroup("safeharbor", help="Safe Harbor management commands.")
@@ -177,7 +179,7 @@ def restore_cmd(from_path: str, dry_run: bool, yes: bool) -> None:
     """Restore the database and uploads from a backup tarball."""
     from flask import current_app
 
-    _validate_tarball_structure(from_path)
+    upload_file_count = _validate_tarball_structure(from_path)
 
     with tempfile.TemporaryDirectory() as td:
         with tarfile.open(from_path, "r") as tf:
@@ -191,13 +193,6 @@ def restore_cmd(from_path: str, dry_run: bool, yes: bool) -> None:
             text=True,
         )
         table_count = result.stdout.count(" TABLE ")
-        uploads_path = Path(td, "uploads")
-        upload_file_count = (
-            len([path for path in uploads_path.rglob("*") if path.is_file()])
-            if uploads_path.exists()
-            else 0
-        )
-
         if dry_run:
             click.echo(
                 f"would restore {table_count} tables, {upload_file_count} upload files "

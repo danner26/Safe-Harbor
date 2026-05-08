@@ -192,7 +192,7 @@ The compose service applies two container-level mitigations:
 
 - `no-new-privileges:true` prevents the ofelia process from gaining extra privileges inside its container.
 - `read_only: true` gives the ofelia container a read-only filesystem.
-- The backups service boots with `UPLOAD_DIR_REQUIRE_WRITABLE=0` because its uploads mount is read-only by design.
+- The backups service mounts uploads RW because the restore CLI writes uploads as part of its operation. Defense-in-depth lives at the docker-socket level (read-only mount on ofelia) and at the non-root safeharbor user inside the container, not at the uploads mount.
 
 These mitigations reduce the scheduler container's write surface, but they do not make Docker socket access risk-free. Run the backup profile only on hosts where the Compose operator is trusted.
 

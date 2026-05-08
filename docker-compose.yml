@@ -70,11 +70,9 @@ services:
     command: ["tail", "-f", "/dev/null"]
     env_file: .env
     environment:
-      FLASK_CONFIG: production
       DATABASE_URL: postgresql+psycopg://safeharbor:safeharbor@postgres:5432/safeharbor
-      UPLOAD_DIR_REQUIRE_WRITABLE: "0"
     volumes:
-      - uploads:/data/uploads:ro
+      - uploads:/data/uploads:rw
       - ./backups:/backups:rw
     depends_on:
       postgres:
