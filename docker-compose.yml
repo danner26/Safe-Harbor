@@ -84,6 +84,20 @@ services:
       ofelia.job-exec.daily-backup.command: "flask safeharbor backup"
     restart: unless-stopped
 
+  ofelia:
+    image: mcuadros/ofelia:v0.3.16
+    profiles: ["backup"]
+    command: ["daemon", "--docker"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    depends_on:
+      backups:
+        condition: service_started
+    restart: unless-stopped
+
   cloudflared:
     image: cloudflare/cloudflared:2024.10.0
     profiles: ["tunnel"]
