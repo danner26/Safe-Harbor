@@ -63,7 +63,7 @@ def _validate_upload_dir(app: Flask) -> None:
             f"UPLOAD_DIR is not a directory: {upload_dir}. Point UPLOAD_DIR at a writable "
             "directory."
         )
-    if not os.access(upload_dir, os.W_OK):
+    if app.config["UPLOAD_DIR_REQUIRE_WRITABLE"] and not os.access(upload_dir, os.W_OK):
         raise RuntimeError(
             f"UPLOAD_DIR is not writable: {upload_dir}. Ensure the app process can write "
             "to this directory."

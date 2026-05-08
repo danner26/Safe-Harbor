@@ -64,6 +64,39 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  backups:
+    image: safeharbor:dev
+    profiles: ["backup"]
+    command: ["tail", "-f", "/dev/null"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://safeharbor:safeharbor@postgres:5432/safeharbor
+    volumes:
+      - uploads:/data/uploads:rw
+      - ./backups:/backups:rw
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.daily-backup.schedule: "${BACKUP_SCHEDULE:-0 0 3 * * *}"
+      ofelia.job-exec.daily-backup.command: "flask safeharbor backup"
+    restart: unless-stopped
+
+  ofelia:
+    image: mcuadros/ofelia:0.3.22
+    profiles: ["backup"]
+    command: ["daemon", "--docker"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    depends_on:
+      backups:
+        condition: service_started
+    restart: unless-stopped
+
   cloudflared:
     image: cloudflare/cloudflared:2024.10.0
     profiles: ["tunnel"]

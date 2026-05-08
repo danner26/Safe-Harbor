@@ -5,11 +5,247 @@ Phase 0 ships an empty group; subsequent phases add `seed`, `import-csv`, etc.
 
 from __future__ import annotations
 
+import os
+import re
+import shutil
+import subprocess
+import tarfile
+import tempfile
+from datetime import UTC, datetime
+from pathlib import Path
+from urllib.parse import unquote, urlparse
+
 import click
 from flask import Flask
 from flask.cli import AppGroup
 
+_BACKUP_FILENAME_RE = re.compile(r"^safeharbor-backup-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z\.tar$")
+
+
+def _parse_database_url(uri: str) -> tuple[str, int, str, str, str]:
+    """Parse a PostgreSQL database URL into pg_dump connection pieces."""
+    normalized = uri.replace("postgresql+psycopg", "postgresql", 1)
+    parsed = urlparse(normalized)
+
+    try:
+        port = parsed.port or 5432
+    except ValueError as exc:
+        raise ValueError("Malformed PostgreSQL database URL") from exc
+
+    dbname = unquote(parsed.path.removeprefix("/"))
+    if (
+        parsed.scheme != "postgresql"
+        or parsed.hostname is None
+        or parsed.username is None
+        or parsed.password is None
+        or not dbname
+    ):
+        raise ValueError("Malformed PostgreSQL database URL")
+
+    return parsed.hostname, port, unquote(parsed.username), unquote(parsed.password), dbname
+
+
+def _apply_retention(backup_dir: Path, daily: int, weekly: int) -> list[Path]:
+    """Delete backups outside the daily plus weekly retention windows."""
+    backups = sorted(
+        (
+            path
+            for path in backup_dir.glob("safeharbor-backup-*.tar")
+            if _BACKUP_FILENAME_RE.match(path.name)
+        ),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+
+    kept = set(backups[:daily])
+    weekly_keys: set[tuple[int, int]] = set()
+    for backup in backups:
+        if len(weekly_keys) >= weekly:
+            break
+        week_key = datetime.fromtimestamp(
+            backup.stat().st_mtime,
+            tz=UTC,
+        ).isocalendar()[:2]
+        if week_key in weekly_keys:
+            continue
+        weekly_keys.add(week_key)
+        kept.add(backup)
+
+    deleted = []
+    for backup in backups:
+        if backup in kept:
+            continue
+        backup.unlink()
+        deleted.append(backup)
+    return deleted
+
+
+def _default_output_path() -> str:
+    """Return the default backup archive path under /backups."""
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H-%M-%SZ")
+    return f"/backups/safeharbor-backup-{timestamp}.tar"
+
+
+def _validate_tarball_structure(path: str) -> int:
+    """Validate that a restore archive contains a database dump and uploads."""
+    try:
+        with tarfile.open(path, "r") as tf:
+            members = tf.getmembers()
+    except tarfile.TarError as exc:
+        raise click.ClickException(f"Restore archive is not a readable tarball: {path}") from exc
+
+    has_db_dump = any(member.name == "db.dump" for member in members)
+    upload_file_count = sum(
+        1 for member in members if member.name.startswith("uploads/") and member.isfile()
+    )
+    has_uploads = any(
+        member.name == "uploads" or member.name.startswith("uploads/") for member in members
+    )
+
+    if not has_db_dump:
+        raise click.ClickException("Restore archive is missing required db.dump member")
+    if not has_uploads:
+        raise click.ClickException("Restore archive is missing required uploads/ member")
+
+    return upload_file_count
+
+
 safeharbor_cli = AppGroup("safeharbor", help="Safe Harbor management commands.")
+
+
+@safeharbor_cli.command("backup")
+@click.option(
+    "--output",
+    default=None,
+    type=str,
+    help="Output tarball path (default: /backups/safeharbor-backup-<UTC>.tar)",
+)
+def backup_cmd(output: str | None) -> None:
+    """Create a database and uploads backup tarball."""
+    from flask import current_app
+
+    output_path = output or _default_output_path()
+    click.echo(f"writing to {output_path}")
+
+    uri = current_app.config["SQLALCHEMY_DATABASE_URI"]
+    host, port, user, password, dbname = _parse_database_url(uri)
+    upload_dir = Path(current_app.config["UPLOAD_DIR"])
+
+    with tempfile.TemporaryDirectory() as td:
+        td_path = Path(td)
+        subprocess.run(
+            [
+                "pg_dump",
+                "-F",
+                "c",
+                "-h",
+                host,
+                "-p",
+                str(port),
+                "-U",
+                user,
+                "-d",
+                dbname,
+                "-f",
+                str(td_path / "db.dump"),
+            ],
+            env={**os.environ, "PGPASSWORD": password},
+            check=True,
+        )
+
+        with tarfile.open(f"{output_path}.tmp", "w") as tf:
+            tf.add(str(td_path / "db.dump"), arcname="db.dump")
+            if upload_dir.exists():
+                tf.add(str(upload_dir), arcname="uploads")
+
+        os.replace(f"{output_path}.tmp", output_path)
+
+    deleted = _apply_retention(
+        Path(output_path).parent,
+        int(os.environ.get("BACKUP_RETENTION_DAILY", "7")),
+        int(os.environ.get("BACKUP_RETENTION_WEEKLY", "4")),
+    )
+    if deleted:
+        click.echo(f"pruned {len(deleted)} old tarballs")
+
+    click.echo(f"wrote {output_path} ({Path(output_path).stat().st_size} bytes)")
+
+
+@safeharbor_cli.command("restore")
+@click.option("--from", "from_path", required=True, type=click.Path(exists=True, dir_okay=False))
+@click.option("--dry-run", is_flag=True, default=False)
+@click.option("--yes", is_flag=True, default=False)
+def restore_cmd(from_path: str, dry_run: bool, yes: bool) -> None:
+    """Restore the database and uploads from a backup tarball."""
+    from flask import current_app
+
+    upload_file_count = _validate_tarball_structure(from_path)
+
+    with tempfile.TemporaryDirectory() as td:
+        with tarfile.open(from_path, "r") as tf:
+            tf.extractall(td, filter="data")
+
+        dump_path = f"{td}/db.dump"
+        result = subprocess.run(
+            ["pg_restore", "--list", dump_path],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        table_count = result.stdout.count(" TABLE ")
+        if dry_run:
+            click.echo(
+                f"would restore {table_count} tables, {upload_file_count} upload files "
+                f"(total {Path(from_path).stat().st_size} bytes) from {from_path}"
+            )
+            return
+
+        if not yes:
+            confirmation = click.prompt(
+                "Type 'restore' to confirm — this WILL OVERWRITE the database and uploads",
+                type=str,
+                default="",
+                show_default=False,
+            )
+            if confirmation != "restore":
+                click.echo("aborted", err=True)
+                raise click.exceptions.Exit(code=1)
+
+        host, port, user, password, dbname = _parse_database_url(
+            current_app.config["SQLALCHEMY_DATABASE_URI"]
+        )
+        subprocess.run(
+            [
+                "pg_restore",
+                "--clean",
+                "--if-exists",
+                "--no-owner",
+                "--no-acl",
+                "-h",
+                host,
+                "-p",
+                str(port),
+                "-U",
+                user,
+                "-d",
+                dbname,
+                dump_path,
+            ],
+            env={**os.environ, "PGPASSWORD": password},
+            check=True,
+        )
+
+        upload_dir = Path(current_app.config["UPLOAD_DIR"])
+        for entry in upload_dir.iterdir():
+            if entry.is_dir():
+                shutil.rmtree(entry)
+            else:
+                entry.unlink()
+        shutil.copytree(f"{td}/uploads", upload_dir, dirs_exist_ok=True)
+
+    click.echo(
+        f"restored {table_count} tables and {upload_file_count} upload files from {from_path}"
+    )
 
 
 @safeharbor_cli.command("hello")

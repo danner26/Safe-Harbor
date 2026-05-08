@@ -35,8 +35,8 @@ nav:
   - Deployment: deploy.md
   - Observability: observability.md
   - Updates: update.md
-  # 2b: Backups: backups.md
-  # 2b: Restore: restore.md
+  - Backups: backups.md
+  - Restore: restore.md
   # 2c: Troubleshooting: troubleshooting.md
   # 2c: Architecture: architecture.md
 
