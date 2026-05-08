@@ -18,6 +18,10 @@ Rendered documentation: <https://danner26.github.io/Safe-Harbor/>
 
 Source documentation starts at [docs/index.md](docs/index.md).
 
+## Backups
+
+Safe Harbor includes an opt-in scheduled local backup sidecar. Add `backup` to `COMPOSE_PROFILES` in your `.env` (e.g., `COMPOSE_PROFILES=tunnel,backup`) and a daily tarball will appear under `./backups/`. See [Backups](docs/backups.md) for configuration and off-site-copy recipes; see [Restore](docs/restore.md) for the recovery procedure.
+
 ## License
 
 Apache 2.0; see [LICENSE](LICENSE).
