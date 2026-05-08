@@ -5,9 +5,81 @@ Phase 0 ships an empty group; subsequent phases add `seed`, `import-csv`, etc.
 
 from __future__ import annotations
 
+import re
+from datetime import UTC, datetime
+from pathlib import Path
+from urllib.parse import unquote, urlparse
+
 import click
 from flask import Flask
 from flask.cli import AppGroup
+
+_BACKUP_FILENAME_RE = re.compile(r"^safeharbor-backup-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z\.tar$")
+
+
+def _parse_database_url(uri: str) -> tuple[str, int, str, str, str]:
+    """Parse a PostgreSQL database URL into pg_dump connection pieces."""
+    normalized = uri.replace("postgresql+psycopg", "postgresql", 1)
+    parsed = urlparse(normalized)
+
+    try:
+        port = parsed.port or 5432
+    except ValueError as exc:
+        raise ValueError("Malformed PostgreSQL database URL") from exc
+
+    dbname = unquote(parsed.path.removeprefix("/"))
+    if (
+        parsed.scheme != "postgresql"
+        or parsed.hostname is None
+        or parsed.username is None
+        or parsed.password is None
+        or not dbname
+    ):
+        raise ValueError("Malformed PostgreSQL database URL")
+
+    return parsed.hostname, port, unquote(parsed.username), unquote(parsed.password), dbname
+
+
+def _apply_retention(backup_dir: Path, daily: int, weekly: int) -> list[Path]:
+    """Delete backups outside the daily plus weekly retention windows."""
+    backups = sorted(
+        (
+            path
+            for path in backup_dir.glob("safeharbor-backup-*.tar")
+            if _BACKUP_FILENAME_RE.match(path.name)
+        ),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+
+    kept = set(backups[:daily])
+    weekly_keys: set[tuple[int, int]] = set()
+    for backup in backups:
+        if len(weekly_keys) >= weekly:
+            break
+        week_key = datetime.fromtimestamp(
+            backup.stat().st_mtime,
+            tz=UTC,
+        ).isocalendar()[:2]
+        if week_key in weekly_keys:
+            continue
+        weekly_keys.add(week_key)
+        kept.add(backup)
+
+    deleted = []
+    for backup in backups:
+        if backup in kept:
+            continue
+        backup.unlink()
+        deleted.append(backup)
+    return deleted
+
+
+def _default_output_path() -> str:
+    """Return the default backup archive path under /backups."""
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H-%M-%SZ")
+    return f"/backups/safeharbor-backup-{timestamp}.tar"
+
 
 safeharbor_cli = AppGroup("safeharbor", help="Safe Harbor management commands.")
 
