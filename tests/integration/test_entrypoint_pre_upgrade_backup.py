@@ -13,9 +13,7 @@ DB_CURRENT_COMMAND = f"{FLASK_APP_COMMAND} db current"
 DB_HEADS_COMMAND = f"{FLASK_APP_COMMAND} db heads"
 DB_UPGRADE_COMMAND = f"{FLASK_APP_COMMAND} db upgrade -d migrations"
 SEED_COMMAND = f"{FLASK_APP_COMMAND} safeharbor seed"
-BACKUP_COMMAND_PREFIX = (
-    f"{FLASK_APP_COMMAND} safeharbor backup --output /backups/pre-upgrade-"
-)
+BACKUP_COMMAND_PREFIX = f"{FLASK_APP_COMMAND} safeharbor backup --output /backups/pre-upgrade-"
 
 
 def _write_fake_flask(bin_dir: Path) -> Path:
@@ -158,9 +156,7 @@ def _assert_core_flask_commands_ran(log_lines: list[str]) -> None:
 
 
 def _assert_backup_before_upgrade(log_lines: list[str]) -> None:
-    assert _backup_command_index(log_lines) < _command_index(
-        log_lines, DB_UPGRADE_COMMAND
-    )
+    assert _backup_command_index(log_lines) < _command_index(log_lines, DB_UPGRADE_COMMAND)
 
 
 def _assert_no_backup_command(log_lines: list[str]) -> None:
@@ -173,9 +169,7 @@ def test_pending_migrations_create_pre_upgrade_backup(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    requested_output = (backup_dir / "requested-output.txt").read_text(
-        encoding="utf-8"
-    )
+    requested_output = (backup_dir / "requested-output.txt").read_text(encoding="utf-8")
     assert requested_output.startswith("/backups/pre-upgrade-")
     assert requested_output.endswith(".tar.gz\n")
     assert (backup_dir / Path(requested_output.strip()).name).read_text(
