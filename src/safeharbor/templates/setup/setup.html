@@ -1,0 +1,58 @@
+{%- macro _setup_url_for_fallback(endpoint, filename=None, feature=None) -%}#{%- endmacro -%}
+{%- macro _setup_empty_messages(with_categories=false) -%}{%- endmacro -%}
+{%- set url_for = url_for|default(_setup_url_for_fallback) -%}
+{%- set get_flashed_messages = get_flashed_messages|default(_setup_empty_messages) -%}
+{%- set session = session|default({'theme': 'auto'}) -%}
+{%- set current_user = current_user|default({'is_authenticated': false}) -%}
+{% extends "base.html" %}
+
+{% block title %}Setup · Safe Harbor{% endblock %}
+
+{% block content %}
+{% if form %}
+  <div class="auth-shell" style="min-height: calc(100vh - 56px); display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+    <div style="width: 100%; max-width: 420px;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <img src="{{ url_for('static', filename='images/SafeHarborLogo.svg') }}" alt="" style="height: 64px; margin-bottom: 12px;">
+        <div style="font-family: var(--font-display); font-size: 22px; font-weight: 600;">Safe Harbor</div>
+        <div class="muted" style="font-size: 13px; margin-top: 4px;">Welcome to Safe Harbor — create your first admin to begin.</div>
+      </div>
+      <div class="card" style="padding: 28px;">
+        <form method="post" style="display: flex; flex-direction: column; gap: 14px;">
+          {{ form.hidden_tag() }}
+          <div class="field">
+            {{ form.email.label }}
+            {{ form.email(class_="input", autocomplete="username", autofocus=true) }}
+            {% for e in form.email.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+          </div>
+          <div class="field">
+            {{ form.password.label }}
+            {{ form.password(class_="input", autocomplete="new-password") }}
+            <span class="help">At least 10 characters.</span>
+            {% for e in form.password.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+          </div>
+          <div class="field">
+            {{ form.confirm_password.label }}
+            {{ form.confirm_password(class_="input", autocomplete="new-password") }}
+            {% for e in form.confirm_password.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+          </div>
+          <div class="field">
+            {{ form.preferred_units.label }}
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              {% for subfield in form.preferred_units %}
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                  {{ subfield() }} {{ subfield.label.text }}
+                </label>
+              {% endfor %}
+            </div>
+            {% for e in form.preferred_units.errors %}<span class="help" style="color: var(--danger);">{{ e }}</span>{% endfor %}
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg">Create admin</button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <p>Welcome to Safe Harbor — create your first admin to begin.</p>
+{% endif %}
+{% endblock %}
