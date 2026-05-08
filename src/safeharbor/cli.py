@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 import re
+import shutil
 import subprocess
 import tarfile
 import tempfile
@@ -85,6 +86,28 @@ def _default_output_path() -> str:
     return f"/backups/safeharbor-backup-{timestamp}.tar"
 
 
+def _validate_tarball_structure(path: str) -> tuple[int, int]:
+    """Validate that a restore archive contains a database dump and uploads."""
+    try:
+        with tarfile.open(path, "r") as tf:
+            members = tf.getmembers()
+    except tarfile.TarError as exc:
+        raise click.ClickException(f"Restore archive is not a readable tarball: {path}") from exc
+
+    has_db_dump = any(member.name == "db.dump" for member in members)
+    upload_file_count = sum(
+        1 for member in members if member.name.startswith("uploads/") and member.isfile()
+    )
+    has_uploads = any(member.name.startswith("uploads/") for member in members)
+
+    if not has_db_dump:
+        raise click.ClickException("Restore archive is missing required db.dump member")
+    if not has_uploads:
+        raise click.ClickException("Restore archive is missing required uploads/ member")
+
+    return 0, upload_file_count
+
+
 safeharbor_cli = AppGroup("safeharbor", help="Safe Harbor management commands.")
 
 
@@ -144,6 +167,90 @@ def backup_cmd(output: str | None) -> None:
         click.echo(f"pruned {len(deleted)} old tarballs")
 
     click.echo(f"wrote {output_path} ({Path(output_path).stat().st_size} bytes)")
+
+
+@safeharbor_cli.command("restore")
+@click.option("--from", "from_path", required=True, type=click.Path(exists=True, dir_okay=False))
+@click.option("--dry-run", is_flag=True, default=False)
+@click.option("--yes", is_flag=True, default=False)
+def restore_cmd(from_path: str, dry_run: bool, yes: bool) -> None:
+    """Restore the database and uploads from a backup tarball."""
+    from flask import current_app
+
+    _validate_tarball_structure(from_path)
+
+    with tempfile.TemporaryDirectory() as td:
+        with tarfile.open(from_path, "r") as tf:
+            tf.extractall(td, filter="data")
+
+        dump_path = f"{td}/db.dump"
+        result = subprocess.run(
+            ["pg_restore", "--list", dump_path],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        table_count = result.stdout.count(" TABLE ")
+        uploads_path = Path(td, "uploads")
+        upload_file_count = (
+            len([path for path in uploads_path.rglob("*") if path.is_file()])
+            if uploads_path.exists()
+            else 0
+        )
+
+        if dry_run:
+            click.echo(
+                f"would restore {table_count} tables, {upload_file_count} upload files "
+                f"(total {Path(from_path).stat().st_size} bytes) from {from_path}"
+            )
+            return
+
+        if not yes:
+            confirmation = click.prompt(
+                "Type 'restore' to confirm — this WILL OVERWRITE the database and uploads",
+                type=str,
+                default="",
+                show_default=False,
+            )
+            if confirmation != "restore":
+                click.echo("aborted", err=True)
+                raise click.exceptions.Exit(code=1)
+
+        host, port, user, password, dbname = _parse_database_url(
+            current_app.config["SQLALCHEMY_DATABASE_URI"]
+        )
+        subprocess.run(
+            [
+                "pg_restore",
+                "--clean",
+                "--if-exists",
+                "--no-owner",
+                "--no-acl",
+                "-h",
+                host,
+                "-p",
+                str(port),
+                "-U",
+                user,
+                "-d",
+                dbname,
+                dump_path,
+            ],
+            env={**os.environ, "PGPASSWORD": password},
+            check=True,
+        )
+
+        upload_dir = Path(current_app.config["UPLOAD_DIR"])
+        for entry in upload_dir.iterdir():
+            if entry.is_dir():
+                shutil.rmtree(entry)
+            else:
+                entry.unlink()
+        shutil.copytree(f"{td}/uploads", upload_dir, dirs_exist_ok=True)
+
+    click.echo(
+        f"restored {table_count} tables and {upload_file_count} upload files from {from_path}"
+    )
 
 
 @safeharbor_cli.command("hello")
