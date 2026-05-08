@@ -65,6 +65,10 @@ class BaseConfig:
         "false",
         "False",
     )
+    UPLOAD_DIR_REQUIRE_WRITABLE: ClassVar[bool] = os.getenv(
+        "UPLOAD_DIR_REQUIRE_WRITABLE",
+        "1",
+    ) not in ("", "0", "false", "False")
     SENTRY_DSN: ClassVar[str] = os.getenv("SENTRY_DSN", "")
     SENTRY_TRACES_SAMPLE_RATE: ClassVar[float] = _safe_float_env(
         "SENTRY_TRACES_SAMPLE_RATE",
