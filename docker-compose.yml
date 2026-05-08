@@ -85,7 +85,7 @@ services:
     restart: unless-stopped
 
   ofelia:
-    image: mcuadros/ofelia:v0.3.16
+    image: mcuadros/ofelia:0.3.22
     profiles: ["backup"]
     command: ["daemon", "--docker"]
     volumes:
