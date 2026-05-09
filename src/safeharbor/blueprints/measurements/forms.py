@@ -14,7 +14,14 @@ from wtforms import (
     StringField,
     SubmitField,
 )
-from wtforms.validators import DataRequired, Length, NumberRange, Optional, ValidationError
+from wtforms.validators import (
+    DataRequired,
+    InputRequired,
+    Length,
+    NumberRange,
+    Optional,
+    ValidationError,
+)
 
 from safeharbor.extensions import db
 from safeharbor.models.parameter_type import ParameterType
@@ -40,7 +47,7 @@ class QuickAddForm(FlaskForm):  # type: ignore[misc]
     value = DecimalField(
         "Value",
         places=4,
-        validators=[DataRequired(), NumberRange(min=Decimal("0"))],
+        validators=[InputRequired(), NumberRange(min=Decimal("0"))],
     )
     value_unit = SelectField("Unit", validators=[DataRequired()])
     recorded_at = DateTimeLocalField(
@@ -58,7 +65,7 @@ class MeasurementEditForm(FlaskForm):  # type: ignore[misc]
     value = DecimalField(
         "Value",
         places=4,
-        validators=[DataRequired(), NumberRange(min=Decimal("0"))],
+        validators=[InputRequired(), NumberRange(min=Decimal("0"))],
     )
     value_unit = SelectField("Unit", validators=[DataRequired()])
     recorded_at = DateTimeLocalField(
