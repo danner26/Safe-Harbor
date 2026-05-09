@@ -28,8 +28,11 @@ Safe Harbor uses Python 3.12.
 
 Install development dependencies with:
 ```bash
-uv sync --extra dev
+uv sync --extra dev --extra docs
 ```
+
+The `docs` extra installs MkDocs and MkDocs Material for local documentation
+preview with `mkdocs serve`.
 
 Docker is used for the local application stack. Install Docker before running
 the full app locally.
