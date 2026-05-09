@@ -50,6 +50,11 @@ restore.
 
 Run the dry-run before every restore:
 
+!!! warning "Use the container path, not the host path"
+    The `--from` value is resolved inside the `backups` container.
+    Use `/backups/<filename>.tar` (the container's bind-mount path),
+    not the host path like `/Users/me/Source/Safe-Harbor/app/backups/<filename>.tar`.
+
 ```bash
 docker compose --profile backup exec backups flask safeharbor restore --from /backups/<filename>.tar --dry-run
 ```
