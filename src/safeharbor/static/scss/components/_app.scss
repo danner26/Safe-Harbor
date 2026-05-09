@@ -285,8 +285,9 @@ body { font-family: var(--font-sans); color: var(--on-surface); background: var(
 .sh-feed-dot-success { background: var(--success); }
 .sh-feed-dot-warning { background: var(--warning); }
 .sh-feed-dot-muted   { background: var(--border-strong); }
-.measurement-delete-modal:target { display: block; background: rgba(7, 24, 28, 0.45); }
-.measurement-delete-modal:target .modal-dialog { transform: none; }
+dialog.modal[open] { display: block; border: 0; padding: 0; background: transparent; }
+dialog.modal::backdrop { background: rgba(7, 24, 28, 0.45); }
+dialog.modal[open] .modal-dialog { transform: none; }
 
 /* Animals list responsive helpers */
 .animals-cards { display: none !important; }

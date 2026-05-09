@@ -1,6 +1,6 @@
 {% from "_macros.html" import display_measurement_value %}
 {% set modal_id = "delete-measurement-" ~ measurement.id %}
-<div
+<dialog
   class="modal measurement-delete-modal"
   id="{{ modal_id }}"
   tabindex="-1"
@@ -45,4 +45,4 @@
       </div>
     </form>
   </div>
-</div>
+</dialog>
