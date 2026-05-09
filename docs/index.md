@@ -62,7 +62,7 @@ deployment environment.
   [https://github.com/danner26/Safe-Harbor/issues](https://github.com/danner26/Safe-Harbor/issues)
 
 - Security contact:
-  [SECURITY.md](../SECURITY.md)
+  [SECURITY.md](https://github.com/danner26/Safe-Harbor/blob/develop/SECURITY.md)
 
 The repository is the source of truth for released code, documentation, issue
 tracking, and security reporting instructions. If you are operating Safe Harbor
