@@ -56,7 +56,7 @@ def _expected_local_minute_values(before: datetime, after: datetime, timezone: s
     return values
 
 
-def test_quick_add_get_requires_login(client) -> None:
+def test_quick_add_get_requires_login(client, configured_user) -> None:
     resp = client.get("/measurements/quick-add", follow_redirects=False)
     assert resp.status_code == 302
     assert "/login" in resp.headers["Location"]

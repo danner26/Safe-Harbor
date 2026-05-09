@@ -18,7 +18,7 @@ def _login(client, db_session) -> User:
     return user
 
 
-def test_unauthenticated_redirects_to_login(client) -> None:
+def test_unauthenticated_redirects_to_login(client, configured_user) -> None:
     resp = client.post(
         "/settings/account/display-name",
         data={"username": "New Name"},

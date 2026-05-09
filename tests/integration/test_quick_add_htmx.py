@@ -63,7 +63,7 @@ def _valid_payload(tank_id: object, *, csrf_token: str | None = None) -> dict[st
     return payload
 
 
-def test_unauthenticated_redirects_to_login(client: Any) -> None:
+def test_unauthenticated_redirects_to_login(client: Any, configured_user) -> None:
     resp = client.post("/measurements/quick-add", follow_redirects=False)
 
     assert resp.status_code == 302

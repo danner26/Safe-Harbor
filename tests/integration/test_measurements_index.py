@@ -142,7 +142,7 @@ def test_index_latest_summary_query_count_does_not_grow_with_tank_count(
     assert five_tank_query_count <= 5
 
 
-def test_index_unauthenticated_redirects_to_login(client: Any) -> None:
+def test_index_unauthenticated_redirects_to_login(client: Any, configured_user) -> None:
     resp = client.get("/measurements", follow_redirects=False)
 
     assert resp.status_code == 302

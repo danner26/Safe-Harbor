@@ -73,7 +73,7 @@ def _seed_animal(
     return animal
 
 
-def test_unauthenticated_redirects_to_login(client: Any) -> None:
+def test_unauthenticated_redirects_to_login(client: Any, configured_user) -> None:
     resp = client.get("/animals", follow_redirects=False)
 
     assert resp.status_code == 302

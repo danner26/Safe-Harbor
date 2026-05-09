@@ -20,7 +20,7 @@ def _login(client, db_session, *, date_format_pref=None):
     return user
 
 
-def test_unauthenticated_redirects_to_login(client) -> None:
+def test_unauthenticated_redirects_to_login(client, configured_user) -> None:
     resp = client.post(
         "/settings/display",
         data={"units": "", "theme": "", "date_format": "us"},

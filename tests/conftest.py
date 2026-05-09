@@ -57,3 +57,19 @@ def db_session(app: Flask) -> Generator[object, None, None]:
         _db.session.remove()
         transaction.rollback()
         connection.close()
+
+
+@pytest.fixture
+def configured_user(db_session):
+    """Seed a user so tests exercise normal app flow after first-run setup."""
+    from safeharbor.models.account import User
+    from safeharbor.services.auth_service import hash_password
+
+    user = User(
+        email="configured-user@x.com",
+        password_hash=hash_password("configured-password-12345"),
+        is_active=True,
+    )
+    db_session.add(user)
+    db_session.commit()
+    return user

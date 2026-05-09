@@ -224,6 +224,7 @@ def _register_blueprints(app: Flask) -> None:
 def _install_setup_redirect_hook(app: Flask) -> None:
     """Redirect first-run traffic to setup until an administrator exists."""
     from flask import redirect, request, url_for
+    from flask_login import current_user
     from sqlalchemy import select
     from sqlalchemy.exc import ProgrammingError
 
@@ -232,13 +233,22 @@ def _install_setup_redirect_hook(app: Flask) -> None:
 
     @app.before_request
     def _redirect_to_setup_if_unconfigured():  # type: ignore[no-untyped-def]
+        if request.endpoint is None:
+            return None
         public_endpoints = {"setup.show_or_create", "static", "health.healthz"}
         if request.endpoint in public_endpoints:
             return None
         if request.endpoint is not None and request.endpoint.startswith("static"):
             return None
         view = app.view_functions.get(request.endpoint or "")
-        if view is not None and getattr(view, "_is_public", False):
+        if (
+            request.endpoint is not None
+            and request.endpoint.startswith("dev.")
+            and view is not None
+            and getattr(view, "_is_public", False)
+        ):
+            return None
+        if current_user.is_authenticated:
             return None
         try:
             has_user = db.session.scalar(select(User.id).limit(1)) is not None
