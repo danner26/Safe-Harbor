@@ -25,6 +25,7 @@ This is the staging validation path for `staging.your-domain.example.com`. The p
      web:
        environment:
          FLASK_CONFIG: production
+         TRUST_PROXY_HEADERS: "1"
        ports:
          - "127.0.0.1:8000:8000"
      worker:
@@ -32,7 +33,7 @@ This is the staging validation path for `staging.your-domain.example.com`. The p
          FLASK_CONFIG: production
    ```
 
-   The loopback-only port binding keeps direct Gunicorn access off the public network while still allowing local smoke tests.
+   `TRUST_PROXY_HEADERS=1` is required after a trusted tunnel or reverse proxy is in front of the app. The loopback-only port binding keeps direct Gunicorn access off the public network while still allowing local smoke tests.
 
 5. Build and start the stack with the tunnel profile and the staging override:
 

@@ -75,7 +75,7 @@ Open `.env` in your editor and review the minimum first-run settings:
 ```dotenv
 FLASK_CONFIG=development
 SECRET_KEY=change-me-in-prod
-TRUST_PROXY_HEADERS=1
+TRUST_PROXY_HEADERS=0
 SAFEHARBOR_VERSION=
 SERVER_NAME=
 ```
@@ -95,13 +95,13 @@ SECRET_KEY=paste-a-random-value-here
 Decide whether Safe Harbor should trust reverse-proxy headers:
 
 ```dotenv
-TRUST_PROXY_HEADERS=1
+TRUST_PROXY_HEADERS=0
 ```
 
-Use `TRUST_PROXY_HEADERS=1` when the app is behind Cloudflare Tunnel, Caddy,
-nginx, or another trusted reverse proxy that sets standard forwarded headers.
-Use `TRUST_PROXY_HEADERS=0` when testing only direct local access and no trusted
-proxy is in front of the app.
+Use `TRUST_PROXY_HEADERS=0` for the local quickstart, where no trusted proxy is
+in front of the app. After setting up Cloudflare Tunnel, Caddy, nginx, or
+another trusted reverse proxy, flip this to `TRUST_PROXY_HEADERS=1`; see
+[Cloudflare Tunnel](deploy.md#cloudflare-tunnel) for the public-access path.
 
 Leave `SAFEHARBOR_VERSION` blank for the latest published image:
 
