@@ -9,7 +9,6 @@
   <title>{% block title %}Safe Harbor{% endblock %}</title>
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-  <script src="{{ url_for('static', filename='js/modal.js') }}" defer></script>
   {% block head %}{% endblock %}
 </head>
 
@@ -130,7 +129,8 @@
     </nav>
   {% endif %}
 
-  {# HTMX (Phase 0); inline theme detection for [data-theme] attribute #}
+  {# Vendor scripts; inline theme detection for [data-theme] attribute #}
+  <script src="{{ url_for('static', filename='vendor/bootstrap/bootstrap.bundle.min.js') }}" defer></script>
   <script src="{{ url_for('static', filename='vendor/htmx/htmx.min.js') }}" defer></script>
   <script>
     // Resolve data-theme="auto" against OS preference.

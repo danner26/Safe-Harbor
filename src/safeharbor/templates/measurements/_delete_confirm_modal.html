@@ -1,6 +1,6 @@
 {% from "_macros.html" import display_measurement_value %}
 {% set modal_id = "delete-measurement-" ~ measurement.id %}
-<dialog
+<div
   class="modal measurement-delete-modal"
   id="{{ modal_id }}"
   tabindex="-1"
@@ -41,8 +41,8 @@
       </div>
       <div class="modal-footer">
         <a href="#" class="btn btn-outline btn-sm" data-bs-dismiss="modal">Cancel</a>
-        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+        <button type="submit" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Delete</button>
       </div>
     </form>
   </div>
-</dialog>
+</div>
