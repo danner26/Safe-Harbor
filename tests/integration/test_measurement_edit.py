@@ -202,6 +202,31 @@ def test_post_updates_measurement(client: Any, app: Flask, db_session: Any) -> N
     assert edited.recorded_at == datetime(2026, 5, 1, 9, 30, tzinfo=UTC)
 
 
+def test_measurement_edit_to_zero(client: Any, app: Flask, db_session: Any) -> None:
+    from safeharbor.models.measurement import Measurement
+
+    _login(client, db_session)
+    measurement = _seed_measurement(
+        app,
+        db_session,
+        value=Decimal("1"),
+        value_unit="pH",
+        parameter_key="ph",
+    )
+
+    resp = client.post(
+        f"/measurements/{measurement.id}/edit",
+        data=_edit_payload(value="0", value_unit="pH"),
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 302
+    db_session.expire_all()
+    edited = db_session.get(Measurement, measurement.id)
+    assert edited is not None
+    assert edited.value == Decimal("0")
+
+
 def test_post_csrf_required(app: Flask, client: Any, db_session: Any) -> None:
     app.config["WTF_CSRF_ENABLED"] = True
     _login(client, db_session)
