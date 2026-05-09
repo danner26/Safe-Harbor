@@ -37,8 +37,8 @@ nav:
   - Updates: update.md
   - Backups: backups.md
   - Restore: restore.md
-  # 2c: Troubleshooting: troubleshooting.md
-  # 2c: Architecture: architecture.md
+  - Architecture: architecture.md
+  - Troubleshooting: troubleshooting.md
 
 markdown_extensions:
   - admonition

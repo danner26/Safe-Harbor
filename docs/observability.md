@@ -43,7 +43,7 @@ The Sentry environment comes from the resolved Flask config name, such as `devel
 Point an external monitor at:
 
 ```text
-https://safeharbor.danner.dev/healthz
+https://<your-public-hostname>/healthz
 ```
 
 Good options include UptimeRobot, Better Stack, healthchecks.io, or an existing monitoring platform. The endpoint is public and returns a lightweight health response without requiring login.

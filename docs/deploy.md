@@ -4,9 +4,9 @@ Safe Harbor runs as a Docker Compose stack: Flask/Gunicorn for the web app, Post
 
 ## Canonical: Cloudflare Tunnel via the `tunnel` compose profile
 
-This is the Phase 2a staging rehearsal path for `staging.safeharbor.danner.dev`. The v1 production cutover uses the same Cloudflare Tunnel topology, but the final production environment wiring and cutover ritual land in Phase 2c.
+This is the staging validation path for `staging.your-domain.example.com`. The production cutover uses the same Cloudflare Tunnel topology, with final production environment wiring handled during the release cutover.
 
-!!! warning "Phase 2a staging scope"
+!!! warning "Staging scope"
     The current compose file is still optimized for local development by default. Do not expose it through a public tunnel unless a local staging override sets `FLASK_CONFIG=production` for `web` and any started `worker` service.
 
 1. Create a Cloudflare Tunnel in the Cloudflare Zero Trust dashboard.
@@ -25,6 +25,7 @@ This is the Phase 2a staging rehearsal path for `staging.safeharbor.danner.dev`.
      web:
        environment:
          FLASK_CONFIG: production
+         TRUST_PROXY_HEADERS: "1"
        ports:
          - "127.0.0.1:8000:8000"
      worker:
@@ -32,7 +33,7 @@ This is the Phase 2a staging rehearsal path for `staging.safeharbor.danner.dev`.
          FLASK_CONFIG: production
    ```
 
-   The loopback-only port binding keeps direct Gunicorn access off the public network while still allowing local smoke tests.
+   `TRUST_PROXY_HEADERS=1` is required after a trusted tunnel or reverse proxy is in front of the app. The loopback-only port binding keeps direct Gunicorn access off the public network while still allowing local smoke tests.
 
 5. Build and start the stack with the tunnel profile and the staging override:
 
@@ -55,7 +56,7 @@ This is the Phase 2a staging rehearsal path for `staging.safeharbor.danner.dev`.
 8. Confirm the public health check responds:
 
    ```bash
-   curl -fsSI https://staging.safeharbor.danner.dev/healthz
+   curl -fsSI https://staging.your-domain.example.com/healthz
    ```
 
 The app listens on plain HTTP port 8000 inside the compose network. Cloudflare terminates TLS at the edge, `cloudflared` forwards to `web:8000`, and Flask trusts exactly one forwarded proxy hop.
