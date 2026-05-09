@@ -2,7 +2,9 @@
 
 ## Supported Versions
 
-Security updates are supported for the current v1.0.x release line.
+Pre-v1 reports should target the current `develop` branch. After the v1.0.0
+release ships, security updates are supported for the current v1.0.x release
+line.
 
 | Version | Supported |
 | --- | --- |
