@@ -52,7 +52,8 @@ walkthrough, use the [installation guide](docs/install.md).
 4. Start the application with Docker Compose:
 
    ```bash
-   docker compose up -d --build web
+   docker compose pull web
+   docker compose up -d web
    ```
 
    Open <http://localhost:8000> and follow the rest of
