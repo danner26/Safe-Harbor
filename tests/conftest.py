@@ -17,6 +17,14 @@ from safeharbor import create_app
 from safeharbor.config import BaseConfig, TestConfig
 from safeharbor.extensions import db as _db
 
+# Argon2 hash of "configured-password-12345", precomputed to avoid paying KDF cost
+# in every test that needs a non-empty user row to bypass first-run setup. Tests
+# that need to authenticate should seed their own user via _seed_user.
+_CONFIGURED_USER_PASSWORD_HASH = (
+    "$argon2id$v=19$m=65536,t=3,p=4$+1+r1dr7H6O0dm6tdQ6BMA"
+    "$qU2vhW6O//5JWV1lKAmsAmNypNKOo0LhImQillNBDe4"
+)
+
 
 @pytest.fixture(scope="session", autouse=True)
 def _test_upload_dir(tmp_path_factory: pytest.TempPathFactory) -> Generator[Path, None, None]:
@@ -57,3 +65,18 @@ def db_session(app: Flask) -> Generator[object, None, None]:
         _db.session.remove()
         transaction.rollback()
         connection.close()
+
+
+@pytest.fixture
+def configured_user(db_session):
+    """Seed a user so tests exercise normal app flow after first-run setup."""
+    from safeharbor.models.account import User
+
+    user = User(
+        email="configured-user@x.com",
+        password_hash=_CONFIGURED_USER_PASSWORD_HASH,
+        is_active=True,
+    )
+    db_session.add(user)
+    db_session.commit()
+    return user

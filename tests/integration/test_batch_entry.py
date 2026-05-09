@@ -58,7 +58,7 @@ def _expected_local_minute_values(before: datetime, after: datetime, timezone: s
     return values
 
 
-def test_batch_get_requires_login(client) -> None:
+def test_batch_get_requires_login(client, configured_user) -> None:
     resp = client.get("/measurements/batch", follow_redirects=False)
 
     assert resp.status_code == 302

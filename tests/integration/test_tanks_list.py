@@ -33,7 +33,7 @@ def _seed_tank(
     return t
 
 
-def test_tanks_list_requires_login(client) -> None:
+def test_tanks_list_requires_login(client, configured_user) -> None:
     resp = client.get("/tanks", follow_redirects=False)
     assert resp.status_code == 302
     assert "/login" in resp.location

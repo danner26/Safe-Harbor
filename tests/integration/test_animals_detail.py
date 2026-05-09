@@ -90,7 +90,7 @@ def _add_event(
     return event
 
 
-def test_unauthenticated_redirects(client: Any) -> None:
+def test_unauthenticated_redirects(client: Any, configured_user) -> None:
     resp = client.get(f"/animals/{uuid4()}", follow_redirects=False)
 
     assert resp.status_code == 302

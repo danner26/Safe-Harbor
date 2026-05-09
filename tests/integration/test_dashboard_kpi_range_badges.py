@@ -73,7 +73,7 @@ def _card_for_label(body: str, label: str) -> str:
     return body[start:next_card]
 
 
-def test_unauthenticated_redirects_to_login(client: FlaskClient) -> None:
+def test_unauthenticated_redirects_to_login(client: FlaskClient, configured_user) -> None:
     response = client.get("/", follow_redirects=False)
 
     assert response.status_code == 302

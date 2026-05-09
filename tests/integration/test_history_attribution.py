@@ -68,7 +68,7 @@ def _history_row_for_temperature(body: str) -> str:
     return body[start:end]
 
 
-def test_unauthenticated_redirects_to_login(client: FlaskClient) -> None:
+def test_unauthenticated_redirects_to_login(client: FlaskClient, configured_user) -> None:
     response = client.get(f"/tanks/{uuid4()}/history", follow_redirects=False)
 
     assert response.status_code == 302

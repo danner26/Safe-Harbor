@@ -45,7 +45,7 @@ def _image_bytes() -> bytes:
     return output.getvalue()
 
 
-def test_unauthenticated_redirects_to_login(client: Any) -> None:
+def test_unauthenticated_redirects_to_login(client: Any, configured_user) -> None:
     resp = client.get(f"/animals/{uuid4()}/image", follow_redirects=False)
 
     assert resp.status_code == 302

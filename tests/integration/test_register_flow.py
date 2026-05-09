@@ -39,7 +39,7 @@ def test_register_get_with_valid_token_renders_form(client, app, db_session) -> 
     assert b'name="confirm"' in resp.data
 
 
-def test_register_get_with_bogus_token_shows_error_no_form(client) -> None:
+def test_register_get_with_bogus_token_shows_error_no_form(client, configured_user) -> None:
     resp = client.get("/register/this-is-not-a-real-token")
     assert resp.status_code == 200
     assert b"invalid or expired" in resp.data.lower()

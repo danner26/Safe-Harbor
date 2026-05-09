@@ -16,7 +16,7 @@ def _login_as(client, db_session, email: str, password: str):
     return u
 
 
-def test_settings_password_get_requires_login(client) -> None:
+def test_settings_password_get_requires_login(client, configured_user) -> None:
     resp = client.get("/settings/password", follow_redirects=False)
     assert resp.status_code == 302
     assert "/login" in resp.location

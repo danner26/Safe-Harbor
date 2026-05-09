@@ -49,7 +49,7 @@ def _seed_tank(
     return tank
 
 
-def test_unauthenticated_redirects_to_login(client: Any, db_session: Any) -> None:
+def test_unauthenticated_redirects_to_login(client: Any, db_session: Any, configured_user) -> None:
     tank = _seed_tank(db_session)
 
     resp = client.post(f"/tanks/{tank.id}/decommission", follow_redirects=False)

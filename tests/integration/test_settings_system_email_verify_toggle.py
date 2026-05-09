@@ -22,7 +22,7 @@ def _login(client, db_session, *, is_superuser: bool) -> User:
     return user
 
 
-def test_unauthenticated_redirects_to_login(client) -> None:
+def test_unauthenticated_redirects_to_login(client, configured_user) -> None:
     resp = client.post(
         "/settings/system/email-verify-toggle",
         data={"enabled": "y"},

@@ -60,7 +60,7 @@ def _seed_tank_with_data(db_session, n: int = 5, *, parameter_key: str = "temper
     return tank, parameter_type
 
 
-def test_history_requires_login(client) -> None:
+def test_history_requires_login(client, configured_user) -> None:
     resp = client.get(f"/tanks/{uuid4()}/history", follow_redirects=False)
 
     assert resp.status_code == 302

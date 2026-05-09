@@ -15,7 +15,7 @@ def _seed_user(db_session, email: str, password: str, is_active: bool = True) ->
     return u
 
 
-def test_login_get_renders_form(client: FlaskClient) -> None:
+def test_login_get_renders_form(client: FlaskClient, configured_user) -> None:
     resp = client.get("/login")
     assert resp.status_code == 200
     assert b"Sign in" in resp.data or b"Log in" in resp.data
@@ -60,7 +60,7 @@ def test_login_wrong_password_returns_form_with_error(client: FlaskClient, db_se
     assert b"incorrect" in resp.data.lower() or b"invalid" in resp.data.lower()
 
 
-def test_login_unknown_email_uses_same_generic_error(client: FlaskClient) -> None:
+def test_login_unknown_email_uses_same_generic_error(client: FlaskClient, configured_user) -> None:
     resp = client.post(
         "/login",
         data={"email": "ghost@x.com", "password": "anything"},

@@ -57,7 +57,7 @@ def _valid_payload(tank_id: Any, **overrides: Any) -> dict[str, str]:
     return payload
 
 
-def test_unauthenticated_redirects(client: Any) -> None:
+def test_unauthenticated_redirects(client: Any, configured_user) -> None:
     resp = client.get("/animals/new", follow_redirects=False)
 
     assert resp.status_code == 302

@@ -22,7 +22,7 @@ def _login(client, db_session, *, units_pref=None, theme_pref=None, date_format_
     return u
 
 
-def test_display_requires_login(client) -> None:
+def test_display_requires_login(client, configured_user) -> None:
     resp = client.get("/settings/display", follow_redirects=False)
     assert resp.status_code == 302
     assert "/login" in resp.location
