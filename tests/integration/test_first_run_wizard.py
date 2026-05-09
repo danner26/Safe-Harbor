@@ -163,9 +163,7 @@ def test_empty_db_setup_rejects_mismatched_passwords(
     assert _user_count(db_session) == 0
 
 
-def test_empty_db_setup_rejects_short_password(
-    app: Flask, client: FlaskClient, db_session
-) -> None:
+def test_empty_db_setup_rejects_short_password(app: Flask, client: FlaskClient, db_session) -> None:
     response = client.post(
         _endpoint_path(app, "setup.show_or_create"),
         data={
@@ -189,9 +187,7 @@ def test_user_exists_setup_returns_404(client: FlaskClient, db_session) -> None:
     assert response.status_code == 404
 
 
-def test_user_exists_root_uses_normal_app_flow(
-    app: Flask, client: FlaskClient, db_session
-) -> None:
+def test_user_exists_root_uses_normal_app_flow(app: Flask, client: FlaskClient, db_session) -> None:
     _seed_user(db_session)
 
     response = client.get("/", follow_redirects=False)
