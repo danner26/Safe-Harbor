@@ -9,21 +9,34 @@ document.addEventListener("click", (event) => {
   if (trigger) {
     const selector = trigger.getAttribute("data-bs-target");
     if (selector) {
-      const dialog = document.querySelector(selector);
+      let dialog = null;
+      try {
+        dialog = document.querySelector(selector);
+      } catch {
+        return;
+      }
       if (dialog instanceof HTMLDialogElement) {
         event.preventDefault();
-        dialog.showModal();
+        if (!dialog.open) {
+          dialog.showModal();
+        }
         return;
       }
     }
   }
 
   const dismiss = target.closest('[data-bs-dismiss="modal"]');
-  if (dismiss) {
+  if (dismiss instanceof HTMLElement) {
     const dialog = dismiss.closest("dialog");
     if (dialog instanceof HTMLDialogElement) {
-      event.preventDefault();
-      dialog.close();
+      // Submit buttons must keep their default form-submission behavior.
+      // The form action navigates away from the page; the modal will be
+      // discarded with the page, so we do NOT call dialog.close() here.
+      const isSubmit = dismiss instanceof HTMLButtonElement && dismiss.type === "submit";
+      if (!isSubmit) {
+        event.preventDefault();
+        dialog.close();
+      }
     }
   }
 });
