@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from unittest.mock import patch
 from urllib.parse import urlsplit
 
 from flask import Flask, url_for
@@ -107,6 +108,23 @@ def test_empty_db_valid_setup_creates_superuser_and_redirects_to_login(
     assert users[0].email == "admin@example.com"
     assert users[0].is_superuser is True
     assert users[0].preferred_units == "metric"
+
+
+def test_empty_db_setup_race_returns_404_and_leaves_session_clean(
+    app: Flask, client: FlaskClient, db_session
+) -> None:
+    with patch(
+        "safeharbor.blueprints.setup.views.create_first_admin",
+        side_effect=ValueError("a user already exists"),
+    ):
+        response = client.post(
+            _endpoint_path(app, "setup.show_or_create"),
+            data=_valid_setup_payload(),
+            follow_redirects=False,
+        )
+
+    assert response.status_code == 404
+    assert _user_count(db_session) == 0
 
 
 def test_empty_db_setup_rejects_missing_csrf_token(

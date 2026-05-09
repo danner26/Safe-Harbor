@@ -23,11 +23,15 @@ def show_or_create() -> Response | str:
 
     form = SetupForm()
     if form.validate_on_submit():
-        create_first_admin(
-            email=form.email.data,
-            password=form.password.data,
-            preferred_units=form.preferred_units.data,
-        )
+        try:
+            create_first_admin(
+                email=form.email.data,
+                password=form.password.data,
+                preferred_units=form.preferred_units.data,
+            )
+        except ValueError:
+            db.session.rollback()
+            abort(404)
         db.session.commit()
         return redirect(url_for("auth.login"))
 
