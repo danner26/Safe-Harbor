@@ -142,7 +142,7 @@ def _backup_command_index(log_lines: list[str]) -> int:
     matches = [
         index
         for index, line in enumerate(log_lines)
-        if line.startswith(BACKUP_COMMAND_PREFIX) and line.endswith(".tar.gz")
+        if line.startswith(BACKUP_COMMAND_PREFIX) and line.endswith(".tar")
     ]
     assert len(matches) == 1
     return matches[0]
@@ -171,7 +171,7 @@ def test_pending_migrations_create_pre_upgrade_backup(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     requested_output = (backup_dir / "requested-output.txt").read_text(encoding="utf-8")
     assert requested_output.startswith("/backups/pre-upgrade-")
-    assert requested_output.endswith(".tar.gz\n")
+    assert requested_output.endswith(".tar\n")
     assert (backup_dir / Path(requested_output.strip()).name).read_text(
         encoding="utf-8"
     ) == "fake backup\n"
