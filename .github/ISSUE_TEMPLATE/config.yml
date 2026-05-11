@@ -1,0 +1,7 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/danner26/Safe-Harbor/security/policy
+    about: |
+      Do not open a public issue for security vulnerabilities. Follow the
+      private reporting process in SECURITY.md.

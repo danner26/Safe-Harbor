@@ -112,7 +112,7 @@ SAFEHARBOR_VERSION=
 For a stable install, pin a published image tag:
 
 ```dotenv
-SAFEHARBOR_VERSION=v1.0.0
+SAFEHARBOR_VERSION=1.0.0
 ```
 
 Set `SERVER_NAME` only when Safe Harbor needs to send email links, such as

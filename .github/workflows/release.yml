@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   release:
-    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/develop'
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
 
     steps:
@@ -40,7 +40,7 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
           flavor: latest=false
 
       - name: Build and publish

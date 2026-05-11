@@ -106,7 +106,9 @@ prerequisites. See the project documentation for environment-specific commands.
 
 ## Status
 
-Status: v1 candidate. Cutover post-merge.
+Stable. See [Releases](https://github.com/danner26/Safe-Harbor/releases) for
+the current version and changelog. Active development continues on the
+`develop` branch.
 
 ## License
 
