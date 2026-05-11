@@ -1,0 +1,81 @@
+name: Bug report
+description: Report a defect in Safe Harbor.
+title: "bug: <short summary>"
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. Please fill out the
+        fields below so the issue can be reproduced and triaged quickly.
+        For security vulnerabilities, do not open a public issue; follow the
+        process documented in the [security policy](https://github.com/danner26/Safe-Harbor/security/policy)
+        instead.
+
+  - type: input
+    id: version
+    attributes:
+      label: Safe Harbor version
+      description: |
+        Output of `SAFEHARBOR_VERSION` from your `.env` (or `latest` if
+        unpinned). For source builds, paste the short Git SHA.
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: deployment
+    attributes:
+      label: Deployment
+      description: How the app is running (Docker Compose, bare metal, dev).
+      placeholder: "Docker Compose on Linux x86_64"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps that consistently reproduce the issue.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: |
+        Paste any relevant log output. Use code fences. Scrub anything that
+        could be sensitive (hostnames, secrets, tokens).
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: I am running a supported version (latest release or develop).
+          required: true
