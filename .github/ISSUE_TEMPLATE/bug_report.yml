@@ -10,7 +10,8 @@ body:
         Thanks for taking the time to file a bug report. Please fill out the
         fields below so the issue can be reproduced and triaged quickly.
         For security vulnerabilities, do not open a public issue; follow the
-        process documented in [SECURITY.md](../SECURITY.md) instead.
+        process documented in the [security policy](https://github.com/danner26/Safe-Harbor/security/policy)
+        instead.
 
   - type: input
     id: version
