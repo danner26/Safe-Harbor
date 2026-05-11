@@ -80,7 +80,7 @@ def _deceased_payload(**overrides: Any) -> dict[str, str]:
     return payload
 
 
-def test_unauthenticated_redirects_to_login(client: Any) -> None:
+def test_unauthenticated_redirects_to_login(client: Any, configured_user) -> None:
     resp = client.post(f"/animals/{uuid4()}/deceased", follow_redirects=False)
 
     assert resp.status_code == 302

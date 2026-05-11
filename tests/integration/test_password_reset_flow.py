@@ -37,7 +37,7 @@ def test_reset_get_with_valid_token_renders_form(client, app, db_session) -> Non
     assert b'name="password"' in resp.data
 
 
-def test_reset_get_with_bogus_token_shows_error(client) -> None:
+def test_reset_get_with_bogus_token_shows_error(client, configured_user) -> None:
     resp = client.get("/password-reset/bogus")
     assert resp.status_code == 200
     assert b"invalid or expired" in resp.data.lower()

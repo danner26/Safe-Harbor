@@ -59,7 +59,7 @@ def _upload_data(filename: str = "clownfish.png", **kwargs: Any) -> dict[str, An
     return {"image": (BytesIO(_image_bytes(**kwargs)), filename)}
 
 
-def test_unauthenticated_redirects_to_login(client: Any) -> None:
+def test_unauthenticated_redirects_to_login(client: Any, configured_user) -> None:
     resp = client.post(f"/animals/{uuid4()}/image", follow_redirects=False)
 
     assert resp.status_code == 302

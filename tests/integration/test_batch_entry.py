@@ -58,7 +58,7 @@ def _expected_local_minute_values(before: datetime, after: datetime, timezone: s
     return values
 
 
-def test_batch_get_requires_login(client) -> None:
+def test_batch_get_requires_login(client, configured_user) -> None:
     resp = client.get("/measurements/batch", follow_redirects=False)
 
     assert resp.status_code == 302
@@ -82,10 +82,10 @@ def test_batch_get_renders_salt_parameters(client, app, db_session) -> None:
     resp = client.get(f"/measurements/batch?tank={tank.id}")
 
     assert resp.status_code == 200
-    assert b"Temperature" in resp.data
-    assert b"Salinity" in resp.data
-    assert b"Calcium" in resp.data
-    assert b"GH" not in resp.data
+    assert b'for="temperature_value"' in resp.data
+    assert b'for="salinity_value"' in resp.data
+    assert b'for="calcium_value"' in resp.data
+    assert b'for="gh_value"' not in resp.data
 
 
 def test_batch_get_defaults_temperature_to_fahrenheit_for_imperial_install(

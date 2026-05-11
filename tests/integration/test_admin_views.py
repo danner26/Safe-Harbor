@@ -36,7 +36,7 @@ def _login_regular(client, db_session, email: str = "reg@x.com"):
     return u
 
 
-def test_admin_invites_requires_login(client) -> None:
+def test_admin_invites_requires_login(client, configured_user) -> None:
     resp = client.get("/admin/invites", follow_redirects=False)
     assert resp.status_code == 302
     assert "/login" in resp.location

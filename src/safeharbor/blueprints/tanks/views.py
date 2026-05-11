@@ -96,6 +96,7 @@ def profile_options_for_water_type(water_type: str) -> str:
 
 
 @tanks_bp.route("/tanks/new", methods=["GET"])
+@login_required  # type: ignore[misc, untyped-decorator, unused-ignore]
 def new_tank() -> str:
     """Render the empty tank creation form with a sensible default unit."""
     form = TankForm()
@@ -117,6 +118,7 @@ def new_tank() -> str:
 
 
 @tanks_bp.route("/tanks", methods=["POST"])
+@login_required  # type: ignore[misc, untyped-decorator, unused-ignore]
 def create_tank() -> Response | str | tuple[str, int]:
     """Validate the tank form and persist a new tank row on success."""
     form = TankForm()
@@ -186,6 +188,7 @@ def detail(tank_id: UUID) -> str:
 
 
 @tanks_bp.route("/tanks/<uuid:tank_id>/edit", methods=["GET"])
+@login_required  # type: ignore[misc, untyped-decorator, unused-ignore]
 def edit(tank_id: UUID) -> str:
     """Pre-fill the tank form with stored values; convert liters to user-pref unit."""
     tank = tank_service.get_tank_or_none_unscoped(tank_id)
@@ -204,6 +207,7 @@ def edit(tank_id: UUID) -> str:
 
 
 @tanks_bp.route("/tanks/<uuid:tank_id>", methods=["POST"])
+@login_required  # type: ignore[misc, untyped-decorator, unused-ignore]
 def update_tank(tank_id: UUID) -> Response | str | tuple[str, int]:
     """Validate the tank form and persist changes to an existing tank on success."""
     tank = tank_service.get_tank_or_none_unscoped(tank_id)

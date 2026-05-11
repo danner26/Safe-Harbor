@@ -16,6 +16,7 @@ from pathlib import Path
 from flask import Flask
 from redis import Redis
 from rq import Queue
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from safeharbor import extensions
 from safeharbor.cli import register_cli
@@ -33,6 +34,7 @@ def create_app(config_name: str | None = None) -> Flask:
 
     app = Flask(__name__, instance_relative_config=False)
     app.config.from_object(config_cls)
+    app.config["FLASK_CONFIG"] = resolved
 
     if config_cls is ProdConfig:
         ProdConfig.validate()
@@ -41,6 +43,7 @@ def create_app(config_name: str | None = None) -> Flask:
     _configure_logging(app)
     _configure_visual_admin_password(app)
     _init_extensions(app)
+    _wire_proxy_fix(app)
     _register_blueprints(app)
     _register_template_globals(app)
     register_cli(app)
@@ -60,7 +63,7 @@ def _validate_upload_dir(app: Flask) -> None:
             f"UPLOAD_DIR is not a directory: {upload_dir}. Point UPLOAD_DIR at a writable "
             "directory."
         )
-    if not os.access(upload_dir, os.W_OK):
+    if app.config["UPLOAD_DIR_REQUIRE_WRITABLE"] and not os.access(upload_dir, os.W_OK):
         raise RuntimeError(
             f"UPLOAD_DIR is not writable: {upload_dir}. Ensure the app process can write "
             "to this directory."
@@ -136,6 +139,7 @@ def _init_extensions(app: Flask) -> None:
     extensions.migrate.init_app(app, extensions.db)
     extensions.login_manager.init_app(app)
     extensions.csrf.init_app(app)
+    extensions.init_sentry(app)
 
     @extensions.login_manager.user_loader  # type: ignore
     def _load_user(user_id: str) -> User | None:  # type: ignore[name-defined]  # noqa: F821
@@ -155,6 +159,12 @@ def _init_extensions(app: Flask) -> None:
 
     extensions.redis_conn = Redis.from_url(app.config["REDIS_URL"])
     extensions.default_queue = Queue(connection=extensions.redis_conn)
+
+
+def _wire_proxy_fix(app: Flask) -> None:
+    if not app.config["TRUST_PROXY_HEADERS"]:
+        return
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)  # type: ignore[method-assign]
 
 
 def _register_template_globals(app: Flask) -> None:
@@ -193,10 +203,12 @@ def _register_blueprints(app: Flask) -> None:
     from safeharbor.blueprints.home import home_bp
     from safeharbor.blueprints.measurements import measurements_bp
     from safeharbor.blueprints.settings import settings_bp
+    from safeharbor.blueprints.setup import setup_bp
     from safeharbor.blueprints.tanks import tanks_bp
 
     app.register_blueprint(home_bp)
     app.register_blueprint(health_bp)
+    app.register_blueprint(setup_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(animals_bp)
     app.register_blueprint(tanks_bp)
@@ -205,7 +217,49 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(settings_bp)
     if app.config["ENABLE_DEV_ROUTES"]:
         app.register_blueprint(dev_bp)
+    _install_setup_redirect_hook(app)
     _install_login_required_hook(app)
+
+
+def _install_setup_redirect_hook(app: Flask) -> None:
+    """Redirect first-run traffic to setup until an administrator exists."""
+    from flask import redirect, request, url_for
+    from flask_login import current_user
+    from sqlalchemy import select
+    from sqlalchemy.exc import ProgrammingError
+
+    from safeharbor.extensions import db
+    from safeharbor.models.account import User
+
+    @app.before_request
+    def _redirect_to_setup_if_unconfigured():  # type: ignore[no-untyped-def]
+        if request.endpoint is None:
+            return None
+        public_endpoints = {"setup.show_or_create", "static", "health.healthz"}
+        if request.endpoint in public_endpoints:
+            return None
+        if request.endpoint is not None and request.endpoint.startswith("static"):
+            return None
+        view = app.view_functions.get(request.endpoint or "")
+        if (
+            request.endpoint is not None
+            and request.endpoint.startswith("dev.")
+            and view is not None
+            and getattr(view, "_is_public", False)
+        ):
+            return None
+        if current_user.is_authenticated:
+            return None
+        try:
+            has_user = db.session.scalar(select(User.id).limit(1)) is not None
+        except ProgrammingError:
+            if not app.testing:
+                raise
+            db.session.rollback()
+            return None
+        if not has_user:
+            return redirect(url_for("setup.show_or_create"))
+        return None
 
 
 def _install_login_required_hook(app: Flask) -> None:

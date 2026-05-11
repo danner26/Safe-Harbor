@@ -19,6 +19,16 @@ from datetime import timedelta
 from typing import ClassVar
 
 
+def _safe_float_env(name: str, default: float) -> float:
+    raw = os.getenv(name)
+    if raw is None or raw == "":
+        return default
+    try:
+        return float(raw)
+    except ValueError:
+        return default
+
+
 class BaseConfig:
     """Common defaults; subclasses override per environment."""
 
@@ -49,7 +59,21 @@ class BaseConfig:
     STORAGE_DIR: ClassVar[str] = os.getenv("STORAGE_DIR", "./uploads")
 
     LOG_LEVEL: ClassVar[str] = os.getenv("LOG_LEVEL", "INFO")
+    TRUST_PROXY_HEADERS: ClassVar[bool] = os.getenv("TRUST_PROXY_HEADERS", "1") not in (
+        "",
+        "0",
+        "false",
+        "False",
+    )
+    UPLOAD_DIR_REQUIRE_WRITABLE: ClassVar[bool] = os.getenv(
+        "UPLOAD_DIR_REQUIRE_WRITABLE",
+        "1",
+    ) not in ("", "0", "false", "False")
     SENTRY_DSN: ClassVar[str] = os.getenv("SENTRY_DSN", "")
+    SENTRY_TRACES_SAMPLE_RATE: ClassVar[float] = _safe_float_env(
+        "SENTRY_TRACES_SAMPLE_RATE",
+        0.0,
+    )
 
     WTF_CSRF_ENABLED: ClassVar[bool] = True
     SESSION_COOKIE_SECURE: ClassVar[bool] = False
@@ -60,7 +84,8 @@ class BaseConfig:
     REMEMBER_COOKIE_HTTPONLY: ClassVar[bool] = True
     REMEMBER_COOKIE_SAMESITE: ClassVar[str] = "Lax"
 
-    PREFERRED_URL_SCHEME: ClassVar[str] = "http"
+    SERVER_NAME: ClassVar[str | None] = os.getenv("SERVER_NAME") or None
+    PREFERRED_URL_SCHEME: ClassVar[str] = os.getenv("PREFERRED_URL_SCHEME") or "https"
 
 
 class DevConfig(BaseConfig):
@@ -72,6 +97,7 @@ class TestConfig(BaseConfig):
     TESTING: ClassVar[bool] = True
     ENABLE_DEV_ROUTES: ClassVar[bool] = True
     WTF_CSRF_ENABLED: ClassVar[bool] = False
+    WTF_CSRF_SSL_STRICT: ClassVar[bool] = False
     SQLALCHEMY_DATABASE_URI: ClassVar[str] = os.getenv(
         "TEST_DATABASE_URL",
         "postgresql+psycopg://safeharbor:safeharbor@localhost:5432/safeharbor_test",
@@ -80,7 +106,6 @@ class TestConfig(BaseConfig):
 
 class ProdConfig(BaseConfig):
     SESSION_COOKIE_SECURE: ClassVar[bool] = True
-    PREFERRED_URL_SCHEME: ClassVar[str] = "https"
     REMEMBER_COOKIE_SECURE: ClassVar[bool] = True
 
     @classmethod
@@ -91,6 +116,9 @@ class ProdConfig(BaseConfig):
         secret = os.getenv("SECRET_KEY", "change-me-in-prod")
         if secret in ("", "change-me-in-prod"):
             raise RuntimeError("SECRET_KEY must be set to a real secret in production")
+        rate = cls.SENTRY_TRACES_SAMPLE_RATE
+        if not (0.0 <= rate <= 1.0):
+            raise RuntimeError(f"SENTRY_TRACES_SAMPLE_RATE must be in [0.0, 1.0]; got {rate}")
         for name in ("DATABASE_URL", "REDIS_URL", "SMTP_HOST", "STORAGE_DIR"):
             if not os.getenv(name):
                 raise RuntimeError(f"{name} must be set in production")

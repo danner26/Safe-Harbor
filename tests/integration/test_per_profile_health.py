@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -63,7 +63,7 @@ def _seed_tank_with_reading(
         parameter_type=_parameter(db_session, parameter_key),
         value=value,
         value_unit=value_unit,
-        recorded_at=datetime(2026, 5, 1, 12, 0, tzinfo=UTC),
+        recorded_at=datetime.now(UTC) - timedelta(days=1),
         source="manual",
         recorded_by_user_id=None,
         note=None,

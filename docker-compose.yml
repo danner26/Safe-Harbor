@@ -24,10 +24,7 @@ services:
     restart: unless-stopped
 
   web:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    image: safeharbor:dev
+    image: ghcr.io/danner26/safeharbor:${SAFEHARBOR_VERSION:-latest}
     env_file: .env
     environment:
       FLASK_CONFIG: development
@@ -37,6 +34,7 @@ services:
       - "8000:8000"
     volumes:
       - uploads:/data/uploads
+      - ./backups:/backups:rw
     depends_on:
       postgres:
         condition: service_healthy
@@ -50,17 +48,63 @@ services:
     restart: unless-stopped
 
   worker:
-    image: safeharbor:dev
+    image: ghcr.io/danner26/safeharbor:${SAFEHARBOR_VERSION:-latest}
     env_file: .env
     environment:
       FLASK_CONFIG: development
       DATABASE_URL: postgresql+psycopg://safeharbor:safeharbor@postgres:5432/safeharbor
       REDIS_URL: redis://redis:6379/0
     command: ["rq", "worker", "--url", "redis://redis:6379/0", "default"]
+    volumes:
+      - ./backups:/backups:rw
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  backups:
+    image: ghcr.io/danner26/safeharbor:${SAFEHARBOR_VERSION:-latest}
+    profiles: ["backup"]
+    command: ["tail", "-f", "/dev/null"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://safeharbor:safeharbor@postgres:5432/safeharbor
+    volumes:
+      - uploads:/data/uploads:rw
+      - ./backups:/backups:rw
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.daily-backup.schedule: "${BACKUP_SCHEDULE:-0 0 3 * * *}"
+      ofelia.job-exec.daily-backup.command: "flask safeharbor backup"
+    restart: unless-stopped
+
+  ofelia:
+    image: mcuadros/ofelia:0.3.22
+    profiles: ["backup"]
+    command: ["daemon", "--docker"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    depends_on:
+      backups:
+        condition: service_started
+    restart: unless-stopped
+
+  cloudflared:
+    image: cloudflare/cloudflared:2024.10.0
+    profiles: ["tunnel"]
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: "${TUNNEL_TOKEN}"
+    depends_on:
+      web:
         condition: service_healthy
     restart: unless-stopped
 

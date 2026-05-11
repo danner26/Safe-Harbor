@@ -30,7 +30,7 @@ def _href_for_label(body: str, label: str) -> str:
     return match.group(1)
 
 
-def test_login_page_does_not_render_nav_links(client: Any) -> None:
+def test_login_page_does_not_render_nav_links(client: Any, configured_user) -> None:
     resp = client.get("/login")
 
     assert resp.status_code == 200
@@ -78,7 +78,7 @@ def test_coming_soon_renders(client: Any, db_session: Any) -> None:
     assert b"Alerts" in resp.data
 
 
-def test_coming_soon_unauthenticated_redirects_to_login(client: Any) -> None:
+def test_coming_soon_unauthenticated_redirects_to_login(client: Any, configured_user) -> None:
     resp = client.get("/coming-soon/alerts", follow_redirects=False)
 
     assert resp.status_code == 302

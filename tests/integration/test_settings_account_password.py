@@ -16,7 +16,7 @@ def _login(client, db_session, *, password: str = "old-password-12345") -> User:
     return user
 
 
-def test_unauthenticated_redirects_to_login(client) -> None:
+def test_unauthenticated_redirects_to_login(client, configured_user) -> None:
     resp = client.post(
         "/settings/account/password",
         data={

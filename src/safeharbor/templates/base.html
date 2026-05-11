@@ -7,6 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}Safe Harbor{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   {% block head %}{% endblock %}
 </head>
@@ -91,9 +92,9 @@
   {# Footer — minimal, self-hosted vibe per decisions.md #}
   <footer class="container" style="margin-top: var(--space-12); padding-top: var(--space-6); padding-bottom: var(--space-8); border-top: 1px solid var(--border); color: var(--on-surface-muted); font-size: var(--fs-caption);">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2);">
-      <span>Self-hosted &middot; v0.4.2</span>
+      <span>Self-hosted</span>
       <span>
-        <a href="https://github.com/danner26/safe-harbor-flask" class="link">GitHub</a>
+        <a href="https://github.com/danner26/Safe-Harbor" class="link">GitHub</a>
         &middot;
         <a href="https://www.apache.org/licenses/LICENSE-2.0" class="link">Apache 2.0</a>
       </span>
@@ -128,7 +129,8 @@
     </nav>
   {% endif %}
 
-  {# HTMX (Phase 0); inline theme detection for [data-theme] attribute #}
+  {# Vendor scripts; inline theme detection for [data-theme] attribute #}
+  <script src="{{ url_for('static', filename='vendor/bootstrap/bootstrap.bundle.min.js') }}" defer></script>
   <script src="{{ url_for('static', filename='vendor/htmx/htmx.min.js') }}" defer></script>
   <script>
     // Resolve data-theme="auto" against OS preference.

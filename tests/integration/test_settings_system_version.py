@@ -18,7 +18,7 @@ def _login(client, db_session) -> User:
     return user
 
 
-def test_unauthenticated_redirects_to_login(client) -> None:
+def test_unauthenticated_redirects_to_login(client, configured_user) -> None:
     resp = client.get("/settings/system", follow_redirects=False)
 
     assert resp.status_code == 302
