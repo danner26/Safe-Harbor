@@ -15,7 +15,7 @@ case "${1:-}" in
     )"
     if [[ -n "$current_revision" && -n "$heads_revision" && "$current_revision" != "$heads_revision" ]]; then
       echo "[entrypoint] pending migrations detected; creating pre-upgrade backup"
-      flask --app safeharbor.wsgi:app safeharbor backup --output "/backups/pre-upgrade-$(date +%Y%m%d-%H%M%S).tar.gz" || {
+      flask --app safeharbor.wsgi:app safeharbor backup --output "/backups/pre-upgrade-$(date +%Y%m%d-%H%M%S).tar" || {
         echo "[entrypoint] pre-upgrade backup failed; continuing"
         true
       }
