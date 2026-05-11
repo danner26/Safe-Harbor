@@ -28,6 +28,10 @@ updates:
       - docker
     commit-message:
       prefix: "chore(docker)"
+    ignore:
+      - dependency-name: python
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: pip
     directory: /
