@@ -198,7 +198,7 @@ same `/backups` directory.
 | `SAFEHARBOR_VERSION` | empty, which resolves to `latest` in Compose | Optional, recommended for production | Docker image tag | Tag used by Compose for `ghcr.io/danner26/safeharbor`. | [Update](update.md) |
 
 Leave `SAFEHARBOR_VERSION` blank only when you intentionally want Compose to use
-the moving `latest` tag. For production, pin a release tag such as `v1.0.0` so
+the moving `latest` tag. For production, pin a release tag such as `1.0.0` so
 pulls, restarts, and rollbacks are predictable.
 
 Changing `SAFEHARBOR_VERSION` affects the image tag only. It does not switch the
