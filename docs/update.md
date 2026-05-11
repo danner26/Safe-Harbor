@@ -17,7 +17,7 @@ Production deployments should pin a known release instead of tracking a moving t
 
 ```bash
 # Set or replace SAFEHARBOR_VERSION in .env (POSIX sh; works on Linux + macOS).
-if grep -q '^SAFEHARBOR_VERSION=' .env; then
+if [ -f .env ] && grep -q '^SAFEHARBOR_VERSION=' .env; then
   sed -i.bak 's/^SAFEHARBOR_VERSION=.*/SAFEHARBOR_VERSION=1.0.0/' .env && rm .env.bak
 else
   printf 'SAFEHARBOR_VERSION=1.0.0\n' >> .env
