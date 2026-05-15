@@ -14,9 +14,12 @@ its body uses ``os.getenv(...)`` rather than ``cls.SECRET_KEY``.
 
 from __future__ import annotations
 
+import logging
 import os
 from datetime import timedelta
 from typing import ClassVar
+
+_logger = logging.getLogger(__name__)
 
 
 def _safe_float_env(name: str, default: float) -> float:
@@ -26,6 +29,12 @@ def _safe_float_env(name: str, default: float) -> float:
     try:
         return float(raw)
     except ValueError:
+        _logger.warning(
+            "config: %s=%r is not parseable as float; using default %r",
+            name,
+            raw,
+            default,
+        )
         return default
 
 

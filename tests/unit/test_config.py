@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import subprocess
 import sys
@@ -9,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from safeharbor.config import DevConfig, ProdConfig, TestConfig, get_config
+from safeharbor.config import DevConfig, ProdConfig, TestConfig, _safe_float_env, get_config
 
 
 def test_dev_config_has_debug_true() -> None:
@@ -42,6 +43,22 @@ def test_get_config_dispatches_by_name() -> None:
     assert get_config("development") is DevConfig
     assert get_config("production") is ProdConfig
     assert get_config("testing") is TestConfig
+
+
+def test_safe_float_env_warns_on_invalid(
+    caplog: pytest.LogCaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SENTRY_TRACES_SAMPLE_RATE", "not-a-float")
+
+    with caplog.at_level(logging.WARNING, logger="safeharbor.config"):
+        value = _safe_float_env("SENTRY_TRACES_SAMPLE_RATE", 0.0)
+
+    assert value == 0.0
+    assert any(
+        record.levelno == logging.WARNING and "SENTRY_TRACES_SAMPLE_RATE" in record.message
+        for record in caplog.records
+    )
 
 
 def test_base_config_remember_cookie_duration_is_30_days() -> None:
