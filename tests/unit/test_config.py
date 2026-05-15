@@ -107,6 +107,21 @@ def test_dev_config_prefers_https_url_scheme() -> None:
     assert result.stdout.strip() == "https https"
 
 
+def test_trust_proxy_headers_typo_fails_closed() -> None:
+    env = {**os.environ, "TRUST_PROXY_HEADERS": "flase"}
+    command = "from safeharbor.config import BaseConfig; print(BaseConfig.TRUST_PROXY_HEADERS)"
+
+    result = subprocess.run(
+        [sys.executable, "-c", command],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.stdout.strip() == "False"
+
+
 def test_server_name_and_preferred_url_scheme_flow_from_env_into_app_config(
     tmp_path: Path,
 ) -> None:
