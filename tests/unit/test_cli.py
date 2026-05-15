@@ -64,6 +64,16 @@ def test_backup_cmd_rejects_invalid_retention(app, monkeypatch) -> None:
     assert "BACKUP_RETENTION" in result.output
 
 
+def test_backup_cmd_rejects_invalid_weekly_retention(app, monkeypatch) -> None:
+    monkeypatch.setenv("BACKUP_RETENTION_WEEKLY", "abc")
+    runner = app.test_cli_runner()
+
+    result = runner.invoke(args=["safeharbor", "backup"])
+
+    assert result.exit_code != 0
+    assert "BACKUP_RETENTION_WEEKLY" in result.output
+
+
 def test_backup_cmd_rejects_negative_retention(app, monkeypatch) -> None:
     monkeypatch.setenv("BACKUP_RETENTION_DAILY", "-1")
     runner = app.test_cli_runner()
