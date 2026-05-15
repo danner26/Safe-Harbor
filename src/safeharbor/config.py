@@ -59,7 +59,7 @@ class BaseConfig:
     STORAGE_DIR: ClassVar[str] = os.getenv("STORAGE_DIR", "./uploads")
 
     LOG_LEVEL: ClassVar[str] = os.getenv("LOG_LEVEL", "INFO")
-    TRUST_PROXY_HEADERS: ClassVar[bool] = os.getenv("TRUST_PROXY_HEADERS", "1") not in (
+    TRUST_PROXY_HEADERS: ClassVar[bool] = os.getenv("TRUST_PROXY_HEADERS", "0") not in (
         "",
         "0",
         "false",
