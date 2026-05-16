@@ -122,6 +122,25 @@ def test_trust_proxy_headers_typo_fails_closed() -> None:
     assert result.stdout.strip() == "False"
 
 
+@pytest.mark.parametrize(
+    "raw_value",
+    ["1", "true", "yes", "on", "TRUE", "Yes", "  on  "],
+)
+def test_trust_proxy_headers_whitelist_truthy(raw_value: str) -> None:
+    env = {**os.environ, "TRUST_PROXY_HEADERS": raw_value}
+    command = "from safeharbor.config import BaseConfig; print(BaseConfig.TRUST_PROXY_HEADERS)"
+
+    result = subprocess.run(
+        [sys.executable, "-c", command],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.stdout.strip() == "True"
+
+
 def test_server_name_and_preferred_url_scheme_flow_from_env_into_app_config(
     tmp_path: Path,
 ) -> None:
