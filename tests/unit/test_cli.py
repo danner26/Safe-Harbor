@@ -52,3 +52,33 @@ def test_create_admin_rejects_invalid_units(app, db_session) -> None:
     assert result.exit_code == 0
     assert "not one of" in result.output.lower()
     assert _created_admin(db_session).preferred_units == "imperial"
+
+
+def test_backup_cmd_rejects_invalid_retention(app, monkeypatch) -> None:
+    monkeypatch.setenv("BACKUP_RETENTION_DAILY", "abc")
+    runner = app.test_cli_runner()
+
+    result = runner.invoke(args=["safeharbor", "backup"])
+
+    assert result.exit_code != 0
+    assert "BACKUP_RETENTION" in result.output
+
+
+def test_backup_cmd_rejects_invalid_weekly_retention(app, monkeypatch) -> None:
+    monkeypatch.setenv("BACKUP_RETENTION_WEEKLY", "abc")
+    runner = app.test_cli_runner()
+
+    result = runner.invoke(args=["safeharbor", "backup"])
+
+    assert result.exit_code != 0
+    assert "BACKUP_RETENTION_WEEKLY" in result.output
+
+
+def test_backup_cmd_rejects_negative_retention(app, monkeypatch) -> None:
+    monkeypatch.setenv("BACKUP_RETENTION_DAILY", "-1")
+    runner = app.test_cli_runner()
+
+    result = runner.invoke(args=["safeharbor", "backup"])
+
+    assert result.exit_code != 0
+    assert "BACKUP_RETENTION" in result.output

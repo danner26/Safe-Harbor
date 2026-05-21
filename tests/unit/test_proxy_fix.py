@@ -16,6 +16,8 @@ from safeharbor.config import BaseConfig, TestConfig
 def proxy_app(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Flask:
     monkeypatch.setattr(BaseConfig, "UPLOAD_DIR", str(tmp_path), raising=False)
     monkeypatch.setattr(TestConfig, "UPLOAD_DIR", str(tmp_path), raising=False)
+    monkeypatch.setattr(BaseConfig, "TRUST_PROXY_HEADERS", True, raising=False)
+    monkeypatch.setattr(TestConfig, "TRUST_PROXY_HEADERS", True, raising=False)
     return create_app("testing")
 
 
