@@ -88,11 +88,11 @@ jobs:
       - name: Create multi-arch manifest
         run: |
           set -euo pipefail
-          TAG_ARGS=""
+          TAG_ARGS=()
           while IFS= read -r tag; do
-            [ -n "$tag" ] && TAG_ARGS="$TAG_ARGS --tag $tag"
+            [ -n "$tag" ] && TAG_ARGS+=(--tag "$tag")
           done <<< "${{ steps.meta.outputs.tags }}"
-          docker buildx imagetools create $TAG_ARGS \
+          docker buildx imagetools create "${TAG_ARGS[@]}" \
             ghcr.io/danner26/safeharbor@${{ needs.build-amd64.outputs.digest }} \
             ghcr.io/danner26/safeharbor@${{ needs.build-arm64.outputs.digest }}
       - name: Inspect multi-arch manifest
