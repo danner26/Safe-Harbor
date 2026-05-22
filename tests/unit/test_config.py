@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import subprocess
 import sys
@@ -9,7 +10,14 @@ from pathlib import Path
 
 import pytest
 
-from safeharbor.config import DevConfig, ProdConfig, TestConfig, get_config
+from safeharbor.config import (
+    DevConfig,
+    ProdConfig,
+    TestConfig,
+    _safe_bool_env,
+    _safe_float_env,
+    get_config,
+)
 
 
 def test_dev_config_has_debug_true() -> None:
@@ -42,6 +50,73 @@ def test_get_config_dispatches_by_name() -> None:
     assert get_config("development") is DevConfig
     assert get_config("production") is ProdConfig
     assert get_config("testing") is TestConfig
+
+
+def test_safe_float_env_warns_on_invalid(
+    caplog: pytest.LogCaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SENTRY_TRACES_SAMPLE_RATE", "not-a-float")
+
+    with caplog.at_level(logging.WARNING, logger="safeharbor.config"):
+        value = _safe_float_env("SENTRY_TRACES_SAMPLE_RATE", 0.0)
+
+    assert value == 0.0
+    assert any(
+        record.levelno == logging.WARNING and "SENTRY_TRACES_SAMPLE_RATE" in record.message
+        for record in caplog.records
+    )
+
+
+@pytest.mark.parametrize(
+    "raw_value",
+    ["1", "true", "yes", "on", "y", "t", "TRUE", "Yes", "  on  "],
+)
+def test_safe_bool_env_recognizes_truthy_values(
+    monkeypatch: pytest.MonkeyPatch,
+    raw_value: str,
+) -> None:
+    monkeypatch.setenv("DUMMY_BOOL_VAR", raw_value)
+
+    assert _safe_bool_env("DUMMY_BOOL_VAR", False) is True
+
+
+@pytest.mark.parametrize(
+    "raw_value",
+    ["0", "false", "no", "off", "n", "f", "", "FALSE", "  no  "],
+)
+def test_safe_bool_env_recognizes_falsy_values_silently(
+    caplog: pytest.LogCaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    raw_value: str,
+) -> None:
+    monkeypatch.setenv("DUMMY_BOOL_VAR", raw_value)
+
+    with caplog.at_level(logging.WARNING, logger="safeharbor.config"):
+        value = _safe_bool_env("DUMMY_BOOL_VAR", True)
+
+    assert value is False
+    assert not caplog.records
+
+
+@pytest.mark.parametrize("raw_value", ["flase", "yess", "truth", "maybe"])
+@pytest.mark.parametrize("default", [True, False])
+def test_safe_bool_env_warns_on_invalid(
+    caplog: pytest.LogCaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    raw_value: str,
+    default: bool,
+) -> None:
+    monkeypatch.setenv("DUMMY_BOOL_VAR", raw_value)
+
+    with caplog.at_level(logging.WARNING, logger="safeharbor.config"):
+        value = _safe_bool_env("DUMMY_BOOL_VAR", default)
+
+    assert value is default
+    assert any(
+        record.levelno == logging.WARNING and "DUMMY_BOOL_VAR" in record.message
+        for record in caplog.records
+    )
 
 
 def test_base_config_remember_cookie_duration_is_30_days() -> None:
@@ -88,6 +163,57 @@ def test_dev_config_prefers_https_url_scheme() -> None:
     )
 
     assert result.stdout.strip() == "https https"
+
+
+def test_trust_proxy_headers_typo_fails_closed() -> None:
+    env = {**os.environ, "TRUST_PROXY_HEADERS": "flase"}
+    command = "from safeharbor.config import BaseConfig; print(BaseConfig.TRUST_PROXY_HEADERS)"
+
+    result = subprocess.run(
+        [sys.executable, "-c", command],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.stdout.strip() == "False"
+
+
+def test_upload_dir_require_writable_typo_falls_back_to_default() -> None:
+    env = {**os.environ, "UPLOAD_DIR_REQUIRE_WRITABLE": "fasle"}
+    command = (
+        "from safeharbor.config import BaseConfig; print(BaseConfig.UPLOAD_DIR_REQUIRE_WRITABLE)"
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-c", command],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.stdout.strip() == "True"
+
+
+@pytest.mark.parametrize(
+    "raw_value",
+    ["1", "true", "yes", "on", "TRUE", "Yes", "  on  "],
+)
+def test_trust_proxy_headers_whitelist_truthy(raw_value: str) -> None:
+    env = {**os.environ, "TRUST_PROXY_HEADERS": raw_value}
+    command = "from safeharbor.config import BaseConfig; print(BaseConfig.TRUST_PROXY_HEADERS)"
+
+    result = subprocess.run(
+        [sys.executable, "-c", command],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.stdout.strip() == "True"
 
 
 def test_server_name_and_preferred_url_scheme_flow_from_env_into_app_config(

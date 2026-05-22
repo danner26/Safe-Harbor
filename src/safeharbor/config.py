@@ -14,9 +14,15 @@ its body uses ``os.getenv(...)`` rather than ``cls.SECRET_KEY``.
 
 from __future__ import annotations
 
+import logging
 import os
 from datetime import timedelta
 from typing import ClassVar
+
+_logger = logging.getLogger(__name__)
+
+_TRUTHY = frozenset({"1", "true", "yes", "on", "y", "t"})
+_FALSY = frozenset({"0", "false", "no", "off", "n", "f", ""})
 
 
 def _safe_float_env(name: str, default: float) -> float:
@@ -26,7 +32,31 @@ def _safe_float_env(name: str, default: float) -> float:
     try:
         return float(raw)
     except ValueError:
+        _logger.warning(
+            "config: %s=%r is not parseable as float; using default %r",
+            name,
+            raw,
+            default,
+        )
         return default
+
+
+def _safe_bool_env(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    normalized = raw.strip().lower()
+    if normalized in _TRUTHY:
+        return True
+    if normalized in _FALSY:
+        return False
+    _logger.warning(
+        "config: %s=%r is not a recognized boolean; using default %r",
+        name,
+        raw,
+        default,
+    )
+    return default
 
 
 class BaseConfig:
@@ -59,16 +89,10 @@ class BaseConfig:
     STORAGE_DIR: ClassVar[str] = os.getenv("STORAGE_DIR", "./uploads")
 
     LOG_LEVEL: ClassVar[str] = os.getenv("LOG_LEVEL", "INFO")
-    TRUST_PROXY_HEADERS: ClassVar[bool] = os.getenv("TRUST_PROXY_HEADERS", "1") not in (
-        "",
-        "0",
-        "false",
-        "False",
+    TRUST_PROXY_HEADERS: ClassVar[bool] = _safe_bool_env("TRUST_PROXY_HEADERS", False)
+    UPLOAD_DIR_REQUIRE_WRITABLE: ClassVar[bool] = _safe_bool_env(
+        "UPLOAD_DIR_REQUIRE_WRITABLE", True
     )
-    UPLOAD_DIR_REQUIRE_WRITABLE: ClassVar[bool] = os.getenv(
-        "UPLOAD_DIR_REQUIRE_WRITABLE",
-        "1",
-    ) not in ("", "0", "false", "False")
     SENTRY_DSN: ClassVar[str] = os.getenv("SENTRY_DSN", "")
     SENTRY_TRACES_SAMPLE_RATE: ClassVar[float] = _safe_float_env(
         "SENTRY_TRACES_SAMPLE_RATE",

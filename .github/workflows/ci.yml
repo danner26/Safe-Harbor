@@ -48,12 +48,31 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           version: "0.4.18"
+          enable-cache: true
 
       - name: Set up Python
         run: uv python install 3.12
 
       - name: Install deps
         run: uv sync --extra dev
+
+      - name: Cache mypy
+        uses: actions/cache@v4
+        with:
+          path: .mypy_cache
+          key: mypy-${{ runner.os }}-${{ hashFiles('uv.lock') }}-${{ github.sha }}
+          restore-keys: |
+            mypy-${{ runner.os }}-${{ hashFiles('uv.lock') }}-
+            mypy-${{ runner.os }}-
+
+      - name: Cache ruff
+        uses: actions/cache@v4
+        with:
+          path: .ruff_cache
+          key: ruff-${{ runner.os }}-${{ hashFiles('uv.lock') }}-${{ github.sha }}
+          restore-keys: |
+            ruff-${{ runner.os }}-${{ hashFiles('uv.lock') }}-
+            ruff-${{ runner.os }}-
 
       - name: Lint (ruff)
         run: uv run ruff check .
@@ -117,6 +136,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           version: "0.4.18"
+          enable-cache: true
 
       - name: Set up Python
         run: uv python install 3.12
