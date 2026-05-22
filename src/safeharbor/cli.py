@@ -124,6 +124,33 @@ def backup_cmd(output: str | None) -> None:
     """Create a database and uploads backup tarball."""
     from flask import current_app
 
+    retention_daily_raw = os.environ.get("BACKUP_RETENTION_DAILY", "7")
+    try:
+        retention_daily = int(retention_daily_raw)
+    except ValueError as exc:
+        raise click.BadParameter(
+            "BACKUP_RETENTION_DAILY must be a non-negative integer, "
+            f"got {retention_daily_raw!r}: {exc}"
+        ) from exc
+
+    retention_weekly_raw = os.environ.get("BACKUP_RETENTION_WEEKLY", "4")
+    try:
+        retention_weekly = int(retention_weekly_raw)
+    except ValueError as exc:
+        raise click.BadParameter(
+            "BACKUP_RETENTION_WEEKLY must be a non-negative integer, "
+            f"got {retention_weekly_raw!r}: {exc}"
+        ) from exc
+
+    if retention_daily < 0:
+        raise click.BadParameter(
+            f"BACKUP_RETENTION_DAILY must be non-negative, got {retention_daily}"
+        )
+    if retention_weekly < 0:
+        raise click.BadParameter(
+            f"BACKUP_RETENTION_WEEKLY must be non-negative, got {retention_weekly}"
+        )
+
     output_path = output or _default_output_path()
     click.echo(f"writing to {output_path}")
 
@@ -162,8 +189,8 @@ def backup_cmd(output: str | None) -> None:
 
     deleted = _apply_retention(
         Path(output_path).parent,
-        int(os.environ.get("BACKUP_RETENTION_DAILY", "7")),
-        int(os.environ.get("BACKUP_RETENTION_WEEKLY", "4")),
+        retention_daily,
+        retention_weekly,
     )
     if deleted:
         click.echo(f"pruned {len(deleted)} old tarballs")
