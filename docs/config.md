@@ -33,8 +33,10 @@ environment that passes `FLASK_CONFIG=production` to `web` and any started
 `worker` after a real `SECRET_KEY` is set.
 
 Production startup validation fails when `SECRET_KEY` is blank or still set to
-`change-me-in-prod`. It also requires `DATABASE_URL`, `REDIS_URL`, `SMTP_HOST`,
-and `STORAGE_DIR` to be present in the production environment.
+`change-me-in-prod`. It also requires `DATABASE_URL`, `REDIS_URL`, and
+`STORAGE_DIR` to be present in the production environment. `SMTP_HOST` is
+optional; when unset, the app starts cleanly and logs a `WARNING` describing
+the deferral.
 
 ## Database
 
@@ -71,7 +73,7 @@ service.
 
 | Variable | Default | Required | Surface | Description | Docs |
 | --- | --- | --- | --- | --- | --- |
-| `SMTP_HOST` | `.env.example`: `mailhog`; app fallback `localhost` | Required in production | Email sending | SMTP server hostname. | [Install](install.md) |
+| `SMTP_HOST` | `.env.example`: `mailhog`; app fallback `localhost` | Optional | Email sending | SMTP server hostname. Leave unset to defer outbound email; `/healthz` reports `"email": "disabled"` in that state. | [Install](install.md#email-is-optional) |
 | `SMTP_PORT` | `1025` | Optional | Email sending | SMTP server port. | - |
 | `SMTP_USER` | empty | Optional | Email sending | SMTP username for authenticated relays. | - |
 | `SMTP_PASS` | empty | Optional | Email sending | SMTP password for authenticated relays. | - |
@@ -84,6 +86,11 @@ UI on port `8025` to inspect messages.
 For production, point `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and
 `SMTP_FROM` at your own relay. If the app sends password reset or account email
 links from asynchronous code, also configure the public URL variables below.
+
+When `SMTP_HOST` is unset, password resets still work without email: admins
+issue one-time reset URLs from the **Admin → Users** page (or via the
+`flask safeharbor reset-password` CLI). See
+[Email is optional](install.md#email-is-optional) for the operator flow.
 
 ## Storage
 
