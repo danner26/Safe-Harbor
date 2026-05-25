@@ -41,6 +41,22 @@ def _safe_float_env(name: str, default: float) -> float:
         return default
 
 
+def _safe_int_env(name: str, default: int) -> int:
+    raw = os.getenv(name)
+    if raw is None or raw == "":
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        _logger.warning(
+            "config: %s=%r is not parseable as int; using default %r",
+            name,
+            raw,
+            default,
+        )
+        return default
+
+
 def _safe_bool_env(name: str, default: bool) -> bool:
     raw = os.getenv(name)
     if raw is None:
@@ -81,7 +97,7 @@ class BaseConfig:
     REDIS_URL: ClassVar[str] = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
     SMTP_HOST: ClassVar[str] = os.getenv("SMTP_HOST", "localhost")
-    SMTP_PORT: ClassVar[int] = int(os.getenv("SMTP_PORT", "1025"))
+    SMTP_PORT: ClassVar[int] = _safe_int_env("SMTP_PORT", 1025)
     SMTP_USER: ClassVar[str] = os.getenv("SMTP_USER", "")
     SMTP_PASS: ClassVar[str] = os.getenv("SMTP_PASS", "")
     SMTP_FROM: ClassVar[str] = os.getenv("SMTP_FROM", "safeharbor@localhost")

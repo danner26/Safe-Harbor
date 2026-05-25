@@ -16,6 +16,7 @@ from safeharbor.config import (
     TestConfig,
     _safe_bool_env,
     _safe_float_env,
+    _safe_int_env,
     get_config,
 )
 
@@ -64,6 +65,37 @@ def test_safe_float_env_warns_on_invalid(
     assert value == 0.0
     assert any(
         record.levelno == logging.WARNING and "SENTRY_TRACES_SAMPLE_RATE" in record.message
+        for record in caplog.records
+    )
+
+
+def test_safe_int_env_returns_default_when_unset(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("DUMMY_INT_VAR", raising=False)
+    assert _safe_int_env("DUMMY_INT_VAR", 1025) == 1025
+
+
+def test_safe_int_env_returns_default_when_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("DUMMY_INT_VAR", "")
+    assert _safe_int_env("DUMMY_INT_VAR", 1025) == 1025
+
+
+def test_safe_int_env_parses_valid_value(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("DUMMY_INT_VAR", "587")
+    assert _safe_int_env("DUMMY_INT_VAR", 1025) == 587
+
+
+def test_safe_int_env_warns_on_invalid(
+    caplog: pytest.LogCaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DUMMY_INT_VAR", "not-a-port")
+
+    with caplog.at_level(logging.WARNING, logger="safeharbor.config"):
+        value = _safe_int_env("DUMMY_INT_VAR", 1025)
+
+    assert value == 1025
+    assert any(
+        record.levelno == logging.WARNING and "DUMMY_INT_VAR" in record.message
         for record in caplog.records
     )
 
