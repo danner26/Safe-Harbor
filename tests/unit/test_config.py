@@ -68,6 +68,56 @@ def test_safe_float_env_warns_on_invalid(
     )
 
 
+def test_prodconfig_validate_passes_without_smtp_host(
+    caplog: pytest.LogCaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SECRET_KEY", "a-real-secret-at-least-32-chars-long-1234")
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x")
+    monkeypatch.setenv("REDIS_URL", "redis://x")
+    monkeypatch.setenv("STORAGE_DIR", "/data")
+    monkeypatch.delenv("SMTP_HOST", raising=False)
+
+    with caplog.at_level(logging.WARNING, logger="safeharbor.config"):
+        ProdConfig.validate()
+
+    assert any(
+        record.levelno == logging.WARNING and "SMTP_HOST" in record.message
+        for record in caplog.records
+    )
+
+
+def test_prodconfig_validate_still_fails_on_missing_database_url(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SECRET_KEY", "a-real-secret-at-least-32-chars-long-1234")
+    monkeypatch.setenv("REDIS_URL", "redis://x")
+    monkeypatch.setenv("STORAGE_DIR", "/data")
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    with pytest.raises(RuntimeError, match="DATABASE_URL"):
+        ProdConfig.validate()
+
+
+def test_prodconfig_validate_no_warning_when_smtp_host_set(
+    caplog: pytest.LogCaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SECRET_KEY", "a-real-secret-at-least-32-chars-long-1234")
+    monkeypatch.setenv("DATABASE_URL", "postgresql://x")
+    monkeypatch.setenv("REDIS_URL", "redis://x")
+    monkeypatch.setenv("STORAGE_DIR", "/data")
+    monkeypatch.setenv("SMTP_HOST", "smtp.example.com")
+
+    with caplog.at_level(logging.WARNING, logger="safeharbor.config"):
+        ProdConfig.validate()
+
+    assert not any(
+        record.levelno == logging.WARNING and "SMTP_HOST" in record.message
+        for record in caplog.records
+    )
+
+
 @pytest.mark.parametrize(
     "raw_value",
     ["1", "true", "yes", "on", "y", "t", "TRUE", "Yes", "  on  "],

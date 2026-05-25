@@ -143,9 +143,14 @@ class ProdConfig(BaseConfig):
         rate = cls.SENTRY_TRACES_SAMPLE_RATE
         if not (0.0 <= rate <= 1.0):
             raise RuntimeError(f"SENTRY_TRACES_SAMPLE_RATE must be in [0.0, 1.0]; got {rate}")
-        for name in ("DATABASE_URL", "REDIS_URL", "SMTP_HOST", "STORAGE_DIR"):
+        for name in ("DATABASE_URL", "REDIS_URL", "STORAGE_DIR"):
             if not os.getenv(name):
                 raise RuntimeError(f"{name} must be set in production")
+        if not os.getenv("SMTP_HOST"):
+            _logger.warning(
+                "config: SMTP_HOST is unset; password-reset emails will not be sent. "
+                "Use 'flask safeharbor reset-password' for self-service recovery."
+            )
 
 
 _CONFIG_BY_NAME: dict[str, type[BaseConfig]] = {
