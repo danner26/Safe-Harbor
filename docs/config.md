@@ -73,7 +73,7 @@ service.
 
 | Variable | Default | Required | Surface | Description | Docs |
 | --- | --- | --- | --- | --- | --- |
-| `SMTP_HOST` | `.env.example`: `mailhog`; app fallback `localhost` | Optional | Email sending | SMTP server hostname. Leave unset to defer outbound email; `/healthz` reports `"email": "disabled"` in that state. | [Install](install.md#email-is-optional) |
+| `SMTP_HOST` | `.env.example`: empty; app fallback `localhost` | Optional | Email sending | SMTP server hostname. Leave unset to defer outbound email; `/healthz` reports `"email": "disabled"` in that state. | [Install](install.md#email-is-optional) |
 | `SMTP_PORT` | `1025` | Optional | Email sending | SMTP server port. | - |
 | `SMTP_USER` | empty | Optional | Email sending | SMTP username for authenticated relays. | - |
 | `SMTP_PASS` | empty | Optional | Email sending | SMTP password for authenticated relays. | - |
