@@ -200,6 +200,11 @@ body { font-family: var(--font-sans); color: var(--on-surface); background: var(
 .tphoto.fresh    { background: linear-gradient(135deg, #8FD0C9 0%, #2E978C 70%, #0E4943 100%); }
 .tphoto.brackish { background: linear-gradient(135deg, #C2E6E2 0%, #6B8E63 60%, #2C383D 100%); }
 .tphoto.fresh-2  { background: linear-gradient(135deg, #C2E6E2 0%, #2E978C 65%, #0A3733 100%); }
+.tank-detail-media { min-width: 0; }
+.tank-detail-summary { min-width: 0; }
+@media (max-width: 720px) {
+  .tank-detail-header-grid { grid-template-columns: 1fr !important; }
+}
 
 /* segmented */
 .seg { display: inline-flex; padding: 2px; background: var(--surface-sunken); border-radius: var(--radius-md); }
