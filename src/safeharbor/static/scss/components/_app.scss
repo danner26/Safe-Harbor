@@ -217,6 +217,8 @@ body { font-family: var(--font-sans); color: var(--on-surface); background: var(
 
 /* tables (compact) */
 .tbl { width:100%; border-collapse: collapse; font-size: var(--fs-body-sm); }
+.tbl-scroll { overflow-x: auto; }
+.tbl-scroll .tbl { width: max-content; min-width: 100%; }
 .tbl th, .tbl td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--border); }
 .tbl thead th { background: var(--surface-sunken); color: var(--on-surface-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: var(--ls-caps); border-bottom: 1px solid var(--border-strong); }
 .tbl .num { text-align: right; font-family: var(--font-mono); font-size: var(--fs-mono); }

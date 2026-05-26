@@ -36,35 +36,37 @@
     </div>
   {% elif view == 'table' %}
     <div class="card" style="padding: 0; overflow-x: auto;">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Water Type</th>
-            <th>Volume</th>
-            <th>Setup Date</th>
-            <th>Status</th>
-            {% if status_filter == 'decommissioned' %}<th>Decommissioned</th>{% endif %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for tank in tanks %}
+      <div class="tbl-scroll">
+        <table class="tbl">
+          <thead>
             <tr>
-              <td><a href="{{ url_for('tanks.detail', tank_id=tank.id) }}">{{ tank.name }}</a></td>
-              <td>{{ tank.water_type | title }}</td>
-              <td>
-                {% if tank.volume_liters is not none %}
-                  {%- set v = display_volume(tank.volume_liters) -%}
-                  {{ v[0] }} {{ v[1] }}
-                {% else %}—{% endif %}
-              </td>
-              <td>{{ tank.setup_date.strftime('%Y-%m-%d') if tank.setup_date else '—' }}</td>
-              <td><span title="{% for p in health_by_tank_id[tank.id].by_parameter %}{{ p.display_name }}: {{ p.band }}{% if not loop.last %}; {% endif %}{% endfor %}">{{ status_badge('tank', health_by_tank_id[tank.id].rollup) }}</span></td>
-              {% if status_filter == 'decommissioned' %}<td>{{ tank.decommission_date.strftime('%Y-%m-%d') }}</td>{% endif %}
+              <th>Name</th>
+              <th>Water Type</th>
+              <th>Volume</th>
+              <th>Setup Date</th>
+              <th>Status</th>
+              {% if status_filter == 'decommissioned' %}<th>Decommissioned</th>{% endif %}
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for tank in tanks %}
+              <tr>
+                <td><a href="{{ url_for('tanks.detail', tank_id=tank.id) }}">{{ tank.name }}</a></td>
+                <td>{{ tank.water_type | title }}</td>
+                <td>
+                  {% if tank.volume_liters is not none %}
+                    {%- set v = display_volume(tank.volume_liters) -%}
+                    {{ v[0] }} {{ v[1] }}
+                  {% else %}—{% endif %}
+                </td>
+                <td>{{ tank.setup_date.strftime('%Y-%m-%d') if tank.setup_date else '—' }}</td>
+                <td><span title="{% for p in health_by_tank_id[tank.id].by_parameter %}{{ p.display_name }}: {{ p.band }}{% if not loop.last %}; {% endif %}{% endfor %}">{{ status_badge('tank', health_by_tank_id[tank.id].rollup) }}</span></td>
+                {% if status_filter == 'decommissioned' %}<td>{{ tank.decommission_date.strftime('%Y-%m-%d') }}</td>{% endif %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   {% else %}
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
