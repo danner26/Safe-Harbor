@@ -164,7 +164,7 @@ body { font-family: var(--font-sans); color: var(--on-surface); background: var(
 .chip-fresh    { background: var(--water-fresh);    color: var(--water-fresh-on); }
 .chip-brackish { background: var(--water-brackish); color: var(--water-brackish-on); }
 
-.badge { display:inline-flex; align-items:center; gap:6px; padding: 3px 10px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 600; line-height: 1.4; }
+.badge { display:inline-flex; align-items:center; gap:6px; padding: 3px 10px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 600; line-height: 1.4; white-space: nowrap; }
 .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.75; }
 .badge-success { background: var(--success-subtle); color: var(--success-subtle-on); }
 .badge-warning { background: var(--warning-subtle); color: var(--warning-subtle-on); }
