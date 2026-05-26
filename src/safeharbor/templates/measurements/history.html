@@ -36,23 +36,25 @@
 
   {% if rows %}
     <div class="card" style="padding: 0; overflow: hidden;">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>Recorded at</th>
-            <th>Parameter</th>
-            <th class="num">Value</th>
-            <th>Logged by</th>
-            <th>Note</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in rows %}
-            {% include "measurements/_history_row.html" %}
-          {% endfor %}
-        </tbody>
-      </table>
+      <div class="tbl-scroll">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Recorded at</th>
+              <th>Parameter</th>
+              <th class="num">Value</th>
+              <th>Logged by</th>
+              <th>Note</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+              {% include "measurements/_history_row.html" %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; gap: 12px;">

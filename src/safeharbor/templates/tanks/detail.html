@@ -14,19 +14,20 @@
 
 
   <header class="card" style="padding: 24px; margin-bottom: 16px;">
-    <div style="display: grid; grid-template-columns: 160px 1fr; gap: 20px; align-items: start;">
+    <div class="tank-detail-header-grid" style="display: grid; grid-template-columns: 160px 1fr; gap: 20px; align-items: start;">
       {% if tank.image_path %}
         <img
+          class="tank-detail-media"
           src="{{ url_for('tanks.serve_image', tank_id=tank.id) }}"
           alt="{{ tank.name }} photo"
           style="width: 160px; aspect-ratio: 1; object-fit: cover; border-radius: 8px;"
         >
       {% else %}
-        <div class="tphoto {% if tank.water_type == 'salt' %}salt{% elif tank.water_type == 'brackish' %}brackish{% else %}fresh{% endif %}" aria-hidden="true" style="width: 160px; aspect-ratio: 1;"></div>
+        <div class="tphoto {% if tank.water_type == 'salt' %}salt{% elif tank.water_type == 'brackish' %}brackish{% else %}fresh{% endif %}" aria-hidden="true" style="min-width: 0; width: 160px; aspect-ratio: 1;"></div>
       {% endif %}
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+      <div class="tank-detail-summary" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
       <div>
-        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px;">
           {%- set _wt_labels = {'salt': 'Saltwater', 'fresh': 'Freshwater', 'brackish': 'Brackish'} -%}
           <span class="chip chip-{% if tank.water_type == 'salt' %}salt{% elif tank.water_type == 'brackish' %}brackish{% else %}fresh{% endif %}">{{ _wt_labels.get(tank.water_type, tank.water_type | title) }}</span>
           <span class="muted" style="font-size: 13px;">· {{ tank_profile_label }}</span>
