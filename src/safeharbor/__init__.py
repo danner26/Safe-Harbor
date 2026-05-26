@@ -202,6 +202,7 @@ def _register_blueprints(app: Flask) -> None:
     from safeharbor.blueprints.health import health_bp
     from safeharbor.blueprints.home import home_bp
     from safeharbor.blueprints.measurements import measurements_bp
+    from safeharbor.blueprints.more import more_bp
     from safeharbor.blueprints.settings import settings_bp
     from safeharbor.blueprints.setup import setup_bp
     from safeharbor.blueprints.tanks import tanks_bp
@@ -213,6 +214,7 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(animals_bp)
     app.register_blueprint(tanks_bp)
     app.register_blueprint(measurements_bp)
+    app.register_blueprint(more_bp)
     app.register_blueprint(coming_soon_bp)
     app.register_blueprint(settings_bp)
     if app.config["ENABLE_DEV_ROUTES"]:
