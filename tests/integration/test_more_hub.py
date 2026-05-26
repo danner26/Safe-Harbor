@@ -12,7 +12,7 @@ def _seed_user(db_session: Any) -> Any:
     from safeharbor.services.auth_service import hash_password
 
     user = User(
-        email="daniel.anner@danstechsupport.com",
+        email="more-hub@x.com",
         password_hash=hash_password("test-pw-12345"),
         is_active=True,
     )

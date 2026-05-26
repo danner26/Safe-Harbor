@@ -9,6 +9,6 @@ more_bp = Blueprint("more", __name__, url_prefix="/more")
 
 
 @more_bp.route("/", methods=["GET"], endpoint="index", strict_slashes=False)
-@login_required  # type: ignore[untyped-decorator]
+@login_required  # type: ignore[misc, untyped-decorator, unused-ignore]
 def index() -> str:
     return render_template("more/index.html")
