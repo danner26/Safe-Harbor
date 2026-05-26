@@ -41,6 +41,22 @@ def _safe_float_env(name: str, default: float) -> float:
         return default
 
 
+def _safe_int_env(name: str, default: int) -> int:
+    raw = os.getenv(name)
+    if raw is None or raw == "":
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        _logger.warning(
+            "config: %s=%r is not parseable as int; using default %r",
+            name,
+            raw,
+            default,
+        )
+        return default
+
+
 def _safe_bool_env(name: str, default: bool) -> bool:
     raw = os.getenv(name)
     if raw is None:
@@ -81,7 +97,7 @@ class BaseConfig:
     REDIS_URL: ClassVar[str] = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
     SMTP_HOST: ClassVar[str] = os.getenv("SMTP_HOST", "localhost")
-    SMTP_PORT: ClassVar[int] = int(os.getenv("SMTP_PORT", "1025"))
+    SMTP_PORT: ClassVar[int] = _safe_int_env("SMTP_PORT", 1025)
     SMTP_USER: ClassVar[str] = os.getenv("SMTP_USER", "")
     SMTP_PASS: ClassVar[str] = os.getenv("SMTP_PASS", "")
     SMTP_FROM: ClassVar[str] = os.getenv("SMTP_FROM", "safeharbor@localhost")
@@ -143,9 +159,14 @@ class ProdConfig(BaseConfig):
         rate = cls.SENTRY_TRACES_SAMPLE_RATE
         if not (0.0 <= rate <= 1.0):
             raise RuntimeError(f"SENTRY_TRACES_SAMPLE_RATE must be in [0.0, 1.0]; got {rate}")
-        for name in ("DATABASE_URL", "REDIS_URL", "SMTP_HOST", "STORAGE_DIR"):
+        for name in ("DATABASE_URL", "REDIS_URL", "STORAGE_DIR"):
             if not os.getenv(name):
                 raise RuntimeError(f"{name} must be set in production")
+        if not os.getenv("SMTP_HOST"):
+            _logger.warning(
+                "config: SMTP_HOST is unset; password-reset emails will not be sent. "
+                "Use 'flask safeharbor reset-password' for self-service recovery."
+            )
 
 
 _CONFIG_BY_NAME: dict[str, type[BaseConfig]] = {

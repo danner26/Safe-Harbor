@@ -5,14 +5,25 @@ set -euo pipefail
 case "${1:-}" in
   gunicorn|rq)
     echo "[entrypoint] checking migration state"
-    current_revision="$(
-      flask --app safeharbor.wsgi:app db current 2>/dev/null \
-        | awk 'NF{ rev=$1 } END{ print rev }'
-    )"
-    heads_revision="$(
-      flask --app safeharbor.wsgi:app db heads 2>/dev/null \
-        | awk 'NF{ rev=$1 } END{ print rev }'
-    )"
+    db_current_err="$(mktemp)"
+    if ! db_current_out="$(flask --app safeharbor.wsgi:app db current 2>"$db_current_err")"; then
+      echo "[entrypoint] 'flask db current' failed:" >&2
+      cat "$db_current_err" >&2
+      rm -f "$db_current_err"
+      exit 1
+    fi
+    rm -f "$db_current_err"
+    current_revision="$(printf '%s\n' "$db_current_out" | awk 'NF{ rev=$1 } END{ print rev }')"
+
+    db_heads_err="$(mktemp)"
+    if ! db_heads_out="$(flask --app safeharbor.wsgi:app db heads 2>"$db_heads_err")"; then
+      echo "[entrypoint] 'flask db heads' failed:" >&2
+      cat "$db_heads_err" >&2
+      rm -f "$db_heads_err"
+      exit 1
+    fi
+    rm -f "$db_heads_err"
+    heads_revision="$(printf '%s\n' "$db_heads_out" | awk 'NF{ rev=$1 } END{ print rev }')"
     if [[ -n "$current_revision" && -n "$heads_revision" && "$current_revision" != "$heads_revision" ]]; then
       echo "[entrypoint] pending migrations detected; creating pre-upgrade backup"
       flask --app safeharbor.wsgi:app safeharbor backup --output "/backups/pre-upgrade-$(date +%Y%m%d-%H%M%S).tar" || {

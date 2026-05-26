@@ -129,6 +129,35 @@ Leave `SERVER_NAME` blank for a local first run:
 SERVER_NAME=
 ```
 
+### Email is optional
+
+SMTP is optional. Safe Harbor does not require an email server to operate;
+password resets work without one. Leave `SMTP_HOST` unset on first install if
+you do not have a relay ready — `/healthz` reports `"email": "disabled"` in
+that state, and the app logs a startup `WARNING` explaining the deferral.
+
+Two recovery paths work without SMTP:
+
+- **Admin UI (share a one-time URL).** Sign in as an administrator and open
+  **Admin → Users → \<user\>**, then click **Issue password reset**. A
+  one-time URL appears on the page (expires in 1 hour); copy it and share it
+  with the user through your usual channel. The user opens the URL, sets a
+  new password, and signs in.
+- **CLI (set a password directly).** From the host:
+
+  ```bash
+  docker compose exec web flask safeharbor reset-password user@example.com
+  ```
+
+  The command prompts for the new password (twice for confirmation) and
+  updates it in place. Use this when you are the operator and the user — the
+  recovery hatch for a forgotten sole-superuser password.
+
+To enable outbound email later, set `SMTP_HOST` (and the related `SMTP_*`
+keys documented in [Configuration](config.md#emailsmtp)) and restart the
+stack. Configuring SMTP does not retroactively send messages for resets
+issued in the no-SMTP window.
+
 The default Compose stack runs `FLASK_CONFIG=development` for the first-run
 setup flow. If you run Safe Harbor with `FLASK_CONFIG=production`, set
 `SECRET_KEY` first, then pass `FLASK_CONFIG=production` through your Compose
