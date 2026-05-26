@@ -284,6 +284,7 @@ body { font-family: var(--font-sans); color: var(--on-surface); background: var(
 }
 .btn-close:hover { opacity: 0.75; }
 .btn-close:focus { outline: 2px solid var(--accent); outline-offset: 2px; opacity: 1; }
+[data-theme="dark"] .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
 
 /* Alert / activity feed list — used on dashboard recent-alerts panel */
 .sh-feed { list-style: none; padding: 0; margin: 0; }
