@@ -154,6 +154,33 @@ def _lock_animal_for_update(animal: Animal) -> None:
     db.session.execute(_lock_animal_for_update_statement(animal)).scalar_one()
 
 
+def _current_tank_id_for(animal_id: UUID, occurred_at: datetime) -> UUID:
+    """Return the tank_id of the most-recent pinned event for `animal_id` at or before `occurred_at`.
+
+    Pinned events are `acquired` or `moved`. The CheckConstraint guarantees every
+    animal's first event is `acquired` with `tank_id IS NOT NULL`, so this helper
+    must always find a row when called for an existing animal with at least one event.
+    """
+    stmt = (
+        select(AnimalEvent.tank_id)
+        .where(
+            AnimalEvent.animal_id == animal_id,
+            AnimalEvent.tank_id.is_not(None),
+            AnimalEvent.occurred_at <= occurred_at,
+        )
+        .order_by(
+            AnimalEvent.occurred_at.desc(),
+            AnimalEvent.created_at.desc(),
+            AnimalEvent.id.desc(),
+        )
+        .limit(1)
+    )
+    result = db.session.scalar(stmt)
+    if result is None:
+        raise ValueError(f"animal {animal_id} has no tank history at or before {occurred_at!r}")
+    return result
+
+
 def current_count(animal: Animal) -> int:
     """Return the current living quantity for an animal record."""
     animal_id = _animal_id(animal)
