@@ -274,47 +274,49 @@
       <span class="desc">.tbl — compact, with sort arrows and status badges.</span>
     </div>
     <div class="card" style="padding: 0; overflow: hidden;">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Tank</th>
-            <th>Parameter</th>
-            <th style="text-align: right;">Value</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>4 min ago</td>
-            <td>Reef 90</td>
-            <td>Salinity</td>
-            <td class="num">1.025 SG</td>
-            <td>{{ status_badge("tank", "healthy") }}</td>
-          </tr>
-          <tr>
-            <td>22 min ago</td>
-            <td>Planted 40</td>
-            <td>pH</td>
-            <td class="num">6.42</td>
-            <td>{{ status_badge("tank", "watch") }}</td>
-          </tr>
-          <tr>
-            <td>1 h ago</td>
-            <td>Mangrove tide</td>
-            <td>Ammonia</td>
-            <td class="num">0.80 ppm</td>
-            <td>{{ status_badge("tank", "unhealthy") }}</td>
-          </tr>
-          <tr>
-            <td>3 h ago</td>
-            <td>Reef 90</td>
-            <td>Temperature</td>
-            <td class="num">25.4 °C</td>
-            <td>{{ status_badge("tank", "healthy") }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="tbl-scroll">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Tank</th>
+              <th>Parameter</th>
+              <th style="text-align: right;">Value</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>4 min ago</td>
+              <td>Reef 90</td>
+              <td>Salinity</td>
+              <td class="num">1.025 SG</td>
+              <td>{{ status_badge("tank", "healthy") }}</td>
+            </tr>
+            <tr>
+              <td>22 min ago</td>
+              <td>Planted 40</td>
+              <td>pH</td>
+              <td class="num">6.42</td>
+              <td>{{ status_badge("tank", "watch") }}</td>
+            </tr>
+            <tr>
+              <td>1 h ago</td>
+              <td>Mangrove tide</td>
+              <td>Ammonia</td>
+              <td class="num">0.80 ppm</td>
+              <td>{{ status_badge("tank", "unhealthy") }}</td>
+            </tr>
+            <tr>
+              <td>3 h ago</td>
+              <td>Reef 90</td>
+              <td>Temperature</td>
+              <td class="num">25.4 °C</td>
+              <td>{{ status_badge("tank", "healthy") }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
