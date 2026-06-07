@@ -406,6 +406,7 @@ def lifecycle_rows(animal: Animal) -> list[dict[str, object]]:
                 "event_type": event.event_type,
                 "occurred_at": event.occurred_at,
                 "tank_id": event.tank_id,
+                "tank_id_at_event": event.tank_id_at_event,
                 "quantity_delta": event.quantity_delta,
                 "note": event.note,
                 "logged_by_display": f"logged by {recorder.display_username()}"
