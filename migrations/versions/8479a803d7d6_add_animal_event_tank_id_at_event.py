@@ -57,9 +57,6 @@ def upgrade() -> None:
         """
     )
 
-    # 3. Promote column to NOT NULL (fails atomically if any row left NULL)
-    op.alter_column("animal_events", "tank_id_at_event", nullable=False)
-
 
 def downgrade() -> None:
     op.drop_column("animal_events", "tank_id_at_event")
