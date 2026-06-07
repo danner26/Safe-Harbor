@@ -107,9 +107,11 @@ def test_lower_better_range_status_from_bounds(value: Decimal, expected_status: 
     ("value", "expected_status"),
     [
         (Decimal("0"), "danger"),
+        (Decimal("5"), "caution"),
         (Decimal("7"), "caution"),
         (Decimal("25"), "ok"),
         (Decimal("48"), "caution"),
+        (Decimal("50"), "caution"),
         (Decimal("51"), "danger"),
     ],
 )

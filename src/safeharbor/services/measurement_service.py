@@ -236,6 +236,7 @@ def _range_status_from_bounds(
             return "caution"
         return "ok"
 
+    # higher_better is reserved and intentionally falls through to the range path.
     if value < min_value:
         return "danger"
 
