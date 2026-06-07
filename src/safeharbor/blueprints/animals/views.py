@@ -273,6 +273,9 @@ def _detail_context(
 ) -> dict[str, object]:
     events = animal_service.lifecycle_rows(animal)
     tank_ids = {row["tank_id"] for row in events if row["tank_id"] is not None}
+    tank_ids |= {
+        row["tank_id_at_event"] for row in events if row["tank_id_at_event"] is not None
+    }
     tank_by_id: dict[UUID, Tank] = {}
     if tank_ids:
         tank_by_id = {

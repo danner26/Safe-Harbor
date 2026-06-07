@@ -16,8 +16,8 @@
 <div style="display: flex; flex-direction: column; gap: 12px;">
   {% for row in events %}
     {% set tank = tank_by_id.get(row.tank_id) if row.tank_id else none %}
-    {# No-tank events use current_tank for display; historical tank may differ. #}
-    {% set timestamp_tank = tank if tank else (current_tank if current_tank is defined else none) %}
+    {% set historical_tank = tank_by_id.get(row.tank_id_at_event) if row.tank_id_at_event else none %}
+    {% set timestamp_tank = historical_tank if historical_tank else (tank if tank else (current_tank if current_tank is defined else none)) %}
     <article class="animal-event animal-event-{{ row.event_type }}" style="display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start;">
       <div aria-hidden="true" style="width: 32px; height: 32px; border-radius: 999px; display: grid; place-items: center; font-size: 12px; font-weight: 700; background: var(--accent-subtle); color: var(--accent-subtle-on);">
         {{ markers.get(row.event_type, '?') }}
