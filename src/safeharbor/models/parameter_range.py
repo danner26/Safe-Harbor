@@ -31,6 +31,10 @@ class ParameterRange(Base, TimestampMixin):
             "water_type IN ('fresh', 'salt', 'brackish')",
             name="parameter_ranges_water_type_check",
         ),
+        CheckConstraint(
+            "directionality IN ('range', 'lower_better', 'higher_better')",
+            name="parameter_ranges_directionality_check",
+        ),
         UniqueConstraint(
             "parameter_type_id",
             "water_type",
@@ -56,6 +60,9 @@ class ParameterRange(Base, TimestampMixin):
     max_value: Mapped[Decimal] = mapped_column(Numeric(12, 4), nullable=False)
     stale_after_days: Mapped[int] = mapped_column(Integer, nullable=False)
     source: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    directionality: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default=text("'range'")
+    )
 
     def __repr__(self) -> str:
         return (
