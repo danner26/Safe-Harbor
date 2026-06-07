@@ -417,6 +417,22 @@ _SEED_PARAMETER_TYPES: list[tuple[str, str, str, str | None, int]] = [
 ]
 
 # (parameter_key, water_type, profile_key, min_value, max_value, source, stale_after_days)
+_NUTRIENT_LOWER_BETTER_PROFILES = {
+    "tropical_fw_community",
+    "coldwater_fw",
+    "fowlr_sw",
+    "brackish",
+}
+
+
+def _seed_directionality(param_key: str, profile_key: str) -> str:
+    if param_key in ("ammonia", "nitrite"):
+        return "lower_better"
+    if param_key in ("nitrate", "phosphate") and profile_key in _NUTRIENT_LOWER_BETTER_PROFILES:
+        return "lower_better"
+    return "range"
+
+
 _SEED_PARAMETER_RANGES: list[tuple[str, str, str, str, str, str, int]] = [
     (
         "temperature",
@@ -494,12 +510,12 @@ _SEED_PARAMETER_RANGES: list[tuple[str, str, str, str, str, str, int]] = [
         "temperature",
         "fresh",
         "coldwater_fw",
-        "18.3",
-        "22.2",
+        "18.0",
+        "23.0",
         "Safe Harbor coldwater freshwater preset",
         7,
     ),
-    ("ph", "fresh", "coldwater_fw", "6.8", "7.6", "Safe Harbor coldwater freshwater preset", 7),
+    ("ph", "fresh", "coldwater_fw", "7.0", "8.0", "Safe Harbor coldwater freshwater preset", 7),
     ("ammonia", "fresh", "coldwater_fw", "0", "0.25", "Safe Harbor coldwater freshwater preset", 7),
     ("nitrite", "fresh", "coldwater_fw", "0", "0.25", "Safe Harbor coldwater freshwater preset", 7),
     (
@@ -534,19 +550,19 @@ _SEED_PARAMETER_RANGES: list[tuple[str, str, str, str, str, str, int]] = [
     ("ph", "fresh", "planted_fw", "6.5", "7.2", "Safe Harbor planted freshwater preset", 7),
     ("ammonia", "fresh", "planted_fw", "0", "0.25", "Safe Harbor planted freshwater preset", 7),
     ("nitrite", "fresh", "planted_fw", "0", "0.25", "Safe Harbor planted freshwater preset", 7),
-    ("nitrate", "fresh", "planted_fw", "0", "20.0", "Safe Harbor planted freshwater preset", 14),
-    ("phosphate", "fresh", "planted_fw", "0", "0.5", "Safe Harbor planted freshwater preset", 14),
+    ("nitrate", "fresh", "planted_fw", "5.0", "50.0", "Safe Harbor planted freshwater preset", 14),
+    ("phosphate", "fresh", "planted_fw", "0.5", "2.0", "Safe Harbor planted freshwater preset", 14),
     ("kh", "fresh", "planted_fw", "3.0", "8.0", "Safe Harbor planted freshwater preset", 30),
     ("gh", "fresh", "planted_fw", "3.0", "10.0", "Safe Harbor planted freshwater preset", 30),
     ("temperature", "salt", "reef_sw", "24.4", "26.7", "Safe Harbor reef saltwater preset", 7),
     ("ph", "salt", "reef_sw", "8.1", "8.4", "Safe Harbor reef saltwater preset", 7),
-    ("salinity", "salt", "reef_sw", "33.0", "35.0", "Safe Harbor reef saltwater preset", 7),
+    ("salinity", "salt", "reef_sw", "34.0", "36.0", "Safe Harbor reef saltwater preset", 7),
     ("ammonia", "salt", "reef_sw", "0", "0.05", "Safe Harbor reef saltwater preset", 7),
     ("nitrite", "salt", "reef_sw", "0", "0.05", "Safe Harbor reef saltwater preset", 7),
-    ("nitrate", "salt", "reef_sw", "0", "5.0", "Safe Harbor reef saltwater preset", 14),
-    ("phosphate", "salt", "reef_sw", "0", "0.05", "Safe Harbor reef saltwater preset", 14),
+    ("nitrate", "salt", "reef_sw", "1.0", "10.0", "Safe Harbor reef saltwater preset", 14),
+    ("phosphate", "salt", "reef_sw", "0.02", "0.10", "Safe Harbor reef saltwater preset", 14),
     ("kh", "salt", "reef_sw", "8.0", "11.0", "Safe Harbor reef saltwater preset", 30),
-    ("calcium", "salt", "reef_sw", "380", "450", "Safe Harbor reef saltwater preset", 30),
+    ("calcium", "salt", "reef_sw", "400", "450", "Safe Harbor reef saltwater preset", 30),
     ("magnesium", "salt", "reef_sw", "1280", "1350", "Safe Harbor reef saltwater preset", 30),
     ("temperature", "salt", "fowlr_sw", "24.4", "26.7", "Safe Harbor FOWLR saltwater preset", 7),
     ("ph", "salt", "fowlr_sw", "8.0", "8.4", "Safe Harbor FOWLR saltwater preset", 7),
@@ -558,8 +574,8 @@ _SEED_PARAMETER_RANGES: list[tuple[str, str, str, str, str, str, int]] = [
     ("kh", "salt", "fowlr_sw", "7.0", "11.0", "Safe Harbor FOWLR saltwater preset", 30),
     ("calcium", "salt", "fowlr_sw", "350", "480", "Safe Harbor FOWLR saltwater preset", 30),
     ("magnesium", "salt", "fowlr_sw", "1150", "1400", "Safe Harbor FOWLR saltwater preset", 30),
-    ("temperature", "brackish", "brackish", "23.9", "26.7", "Safe Harbor brackish preset", 7),
-    ("ph", "brackish", "brackish", "7.4", "8.2", "Safe Harbor brackish preset", 7),
+    ("temperature", "brackish", "brackish", "23.0", "28.0", "Safe Harbor brackish preset", 7),
+    ("ph", "brackish", "brackish", "7.5", "8.4", "Safe Harbor brackish preset", 7),
     ("salinity", "brackish", "brackish", "5.0", "15.0", "Safe Harbor brackish preset", 7),
     ("ammonia", "brackish", "brackish", "0", "0.25", "Safe Harbor brackish preset", 7),
     ("nitrite", "brackish", "brackish", "0", "0.25", "Safe Harbor brackish preset", 7),
@@ -658,6 +674,7 @@ def seed() -> None:
                 max_value=Decimal(hi),
                 stale_after_days=stale_after_days,
                 source=source,
+                directionality=_seed_directionality(param_key, profile_key),
             )
         )
         ranges_created += 1
