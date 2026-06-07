@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from flask import Blueprint, current_app, jsonify
 from sqlalchemy import text
 
@@ -19,7 +21,13 @@ def healthz():  # type: ignore[no-untyped-def]
     db_status = _check_db()
     redis_status = _check_redis()
     overall = "ok" if db_status == "ok" and redis_status == "ok" else "degraded"
-    payload = {"status": overall, "db": db_status, "redis": redis_status}
+    email_status = "configured" if os.getenv("SMTP_HOST") else "disabled"
+    payload = {
+        "status": overall,
+        "db": db_status,
+        "redis": redis_status,
+        "email": email_status,
+    }
     code = 200 if overall == "ok" else 503
     return jsonify(payload), code
 

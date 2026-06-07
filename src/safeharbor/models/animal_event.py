@@ -61,6 +61,9 @@ class AnimalEvent(Base):
     tank_id: Mapped[UUID | None] = mapped_column(
         PgUUID(as_uuid=True), ForeignKey("tanks.id"), nullable=True
     )
+    tank_id_at_event: Mapped[UUID | None] = mapped_column(
+        PgUUID(as_uuid=True), ForeignKey("tanks.id"), nullable=True
+    )
     quantity_delta: Mapped[int | None] = mapped_column(Integer, nullable=True)
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     note: Mapped[str | None] = mapped_column(String(512), nullable=True)

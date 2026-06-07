@@ -22,49 +22,49 @@
     </div>
   {% else %}
     <div class="animals-table card" style="padding: 0; overflow-x: auto;">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Species</th>
-            <th>Tank</th>
-            <th>Acquired</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in animal_rows %}
+        <table class="tbl">
+          <thead>
             <tr>
-              <td>{{ row.animal.name or row.animal.species }}</td>
-              <td>
-                {{ row.animal.species }}
-                {% if row.animal.scientific_name %}
-                  <div class="muted" style="font-size: 12px;">{{ row.animal.scientific_name }}</div>
-                {% endif %}
-              </td>
-              <td>
-                {% if row.tank_name %}
-                  <span class="chip">{{ row.tank_name }}</span>
-                {% else %}
-                  <span class="muted">—</span>
-                {% endif %}
-              </td>
-              <td>
-                {% if row.acquired_at and row.acquired_tank %}
-                  <time datetime="{{ row.acquired_at | tank_local(row.acquired_tank, fmt="iso") }}">
-                    {{ row.acquired_at | tank_local(row.acquired_tank, fmt="short") }}
-                  </time>
-                {% else %}
-                  —
-                {% endif %}
-              </td>
-              <td>{{ status_badge('animal', row.status) }}</td>
-              <td><a href="{{ url_for('animals.detail_animal', animal_id=row.animal.id) }}" class="btn btn-ghost btn-sm">View</a></td>
+              <th>Name</th>
+              <th>Species</th>
+              <th>Tank</th>
+              <th>Acquired</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for row in animal_rows %}
+              <tr>
+                <td>{{ row.animal.name or row.animal.species }}</td>
+                <td>
+                  {{ row.animal.species }}
+                  {% if row.animal.scientific_name %}
+                    <div class="muted" style="font-size: 12px;">{{ row.animal.scientific_name }}</div>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if row.tank_name %}
+                    <span class="chip">{{ row.tank_name }}</span>
+                  {% else %}
+                    <span class="muted">—</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if row.acquired_at and row.acquired_tank %}
+                    <time datetime="{{ row.acquired_at | tank_local(row.acquired_tank, fmt="iso") }}">
+                      {{ row.acquired_at | tank_local(row.acquired_tank, fmt="short") }}
+                    </time>
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td>{{ status_badge('animal', row.status) }}</td>
+                <td><a href="{{ url_for('animals.detail_animal', animal_id=row.animal.id) }}" class="btn btn-ghost btn-sm">View</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
     </div>
 
     <div class="animals-cards" style="display: grid; grid-template-columns: 1fr; gap: 12px;">

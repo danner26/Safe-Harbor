@@ -45,18 +45,21 @@ def test_animal_event_is_exported_from_models_package() -> None:
 
 def test_animal_event_table_has_specified_columns_only(app, db_session) -> None:
     inspector = inspect(db_session.bind)
-    columns = [column["name"] for column in inspector.get_columns("animal_events")]
-    assert columns == [
+    columns = inspector.get_columns("animal_events")
+    column_names = [column["name"] for column in columns]
+    assert column_names == [
         "id",
         "animal_id",
         "event_type",
         "tank_id",
+        "tank_id_at_event",
         "quantity_delta",
         "occurred_at",
         "note",
         "recorded_by_user_id",
         "created_at",
     ]
+    assert {column["name"]: column for column in columns}["tank_id_at_event"]["nullable"]
 
 
 def test_animal_event_foreign_keys_include_animal_delete_cascade(app, db_session) -> None:

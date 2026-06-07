@@ -20,3 +20,17 @@ def test_healthz_db_check_green(client) -> None:
     response = client.get("/healthz")
     body = response.get_json()
     assert body["db"] == "ok"
+
+
+def test_healthz_reports_email_disabled_when_smtp_unset(client, monkeypatch) -> None:
+    monkeypatch.delenv("SMTP_HOST", raising=False)
+    response = client.get("/healthz")
+    body = response.get_json()
+    assert body["email"] == "disabled"
+
+
+def test_healthz_reports_email_configured_when_smtp_set(client, monkeypatch) -> None:
+    monkeypatch.setenv("SMTP_HOST", "smtp.example.com")
+    response = client.get("/healthz")
+    body = response.get_json()
+    assert body["email"] == "configured"
