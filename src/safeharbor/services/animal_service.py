@@ -49,6 +49,7 @@ def create_animal(
         animal_id=animal.id,
         event_type=EventType.ACQUIRED.value,
         tank_id=initial_tank.id,
+        tank_id_at_event=initial_tank.id,
         quantity_delta=acquired_quantity,
         occurred_at=acquired_at,
         note=initial_note or None,
@@ -87,6 +88,7 @@ def record_event(
         animal_id=_animal_id(animal),
         event_type=normalized_event_type.value,
         tank_id=None,
+        tank_id_at_event=_current_tank_id_for(_animal_id(animal), occurred_at),
         quantity_delta=None,
         occurred_at=occurred_at,
         note=note or None,
@@ -152,6 +154,33 @@ def _lock_animal_for_update_statement(animal: Animal) -> Select[tuple[UUID]]:
 
 def _lock_animal_for_update(animal: Animal) -> None:
     db.session.execute(_lock_animal_for_update_statement(animal)).scalar_one()
+
+
+def _current_tank_id_for(animal_id: UUID, occurred_at: datetime) -> UUID:
+    """Return the tank_id of the most-recent pinned event for `animal_id` at or before `occurred_at`.
+
+    Pinned events are `acquired` or `moved`. The CheckConstraint guarantees every
+    animal's first event is `acquired` with `tank_id IS NOT NULL`, so this helper
+    must always find a row when called for an existing animal with at least one event.
+    """
+    stmt = (
+        select(AnimalEvent.tank_id)
+        .where(
+            AnimalEvent.animal_id == animal_id,
+            AnimalEvent.tank_id.is_not(None),
+            AnimalEvent.occurred_at <= occurred_at,
+        )
+        .order_by(
+            AnimalEvent.occurred_at.desc(),
+            AnimalEvent.created_at.desc(),
+            AnimalEvent.id.desc(),
+        )
+        .limit(1)
+    )
+    result = db.session.scalar(stmt)
+    if result is None:
+        raise ValueError(f"animal {animal_id} has no tank history at or before {occurred_at!r}")
+    return result
 
 
 def current_count(animal: Animal) -> int:
@@ -298,6 +327,7 @@ def move_animal(
         animal_id=_animal_id(animal),
         event_type=EventType.MOVED.value,
         tank_id=to_tank.id,
+        tank_id_at_event=to_tank.id,
         quantity_delta=None,
         occurred_at=occurred_at,
         note=note or None,
@@ -327,6 +357,7 @@ def mark_deceased(
         animal_id=_animal_id(animal),
         event_type=EventType.DECEASED.value,
         tank_id=None,
+        tank_id_at_event=_current_tank_id_for(_animal_id(animal), occurred_at),
         quantity_delta=-quantity,
         occurred_at=occurred_at,
         note=note or None,
@@ -375,6 +406,7 @@ def lifecycle_rows(animal: Animal) -> list[dict[str, object]]:
                 "event_type": event.event_type,
                 "occurred_at": event.occurred_at,
                 "tank_id": event.tank_id,
+                "tank_id_at_event": event.tank_id_at_event,
                 "quantity_delta": event.quantity_delta,
                 "note": event.note,
                 "logged_by_display": f"logged by {recorder.display_username()}"
