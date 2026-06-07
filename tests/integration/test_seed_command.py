@@ -64,13 +64,14 @@ def test_seed_creates_profile_specific_parameter_ranges(app, db_session) -> None
             ParameterType.key,
             ParameterRange.min_value,
             ParameterRange.max_value,
+            ParameterRange.directionality,
         )
         .join(ParameterType)
         .order_by(ParameterRange.profile_key, ParameterType.display_order)
     ).all()
     seeded = {
-        (profile_key, water_type, parameter_key): (min_value, max_value)
-        for profile_key, water_type, parameter_key, min_value, max_value in rows
+        (profile_key, water_type, parameter_key): (min_value, max_value, directionality)
+        for profile_key, water_type, parameter_key, min_value, max_value, directionality in rows
     }
 
     assert {profile_key for profile_key, *_ in rows} == set(TANK_PROFILES)
@@ -102,31 +103,53 @@ def test_seed_creates_profile_specific_parameter_ranges(app, db_session) -> None
     }
     assert ("coldwater_fw", "fresh", "salinity") not in seeded
 
-    assert seeded[("reef_sw", "salt", "kh")] == (Decimal("8.0000"), Decimal("11.0000"))
+    assert seeded[("reef_sw", "salt", "kh")][:2] == (Decimal("8.0000"), Decimal("11.0000"))
     assert seeded[("reef_sw", "salt", "calcium")] == (
-        Decimal("380.0000"),
+        Decimal("400.0000"),
         Decimal("450.0000"),
+        "range",
     )
     assert seeded[("reef_sw", "salt", "magnesium")] == (
         Decimal("1280.0000"),
         Decimal("1350.0000"),
+        "range",
     )
     assert seeded[("reef_sw", "salt", "nitrate")] == (
-        Decimal("0.0000"),
-        Decimal("5.0000"),
+        Decimal("1.0000"),
+        Decimal("10.0000"),
+        "range",
     )
     assert seeded[("reef_sw", "salt", "phosphate")] == (
-        Decimal("0.0000"),
-        Decimal("0.0500"),
+        Decimal("0.0200"),
+        Decimal("0.1000"),
+        "range",
     )
     assert seeded[("coldwater_fw", "fresh", "temperature")] == (
-        Decimal("18.3000"),
-        Decimal("22.2000"),
+        Decimal("18.0000"),
+        Decimal("23.0000"),
+        "range",
     )
     assert seeded[("tropical_fw_community", "fresh", "temperature")] == (
         Decimal("22.0000"),
         Decimal("28.0000"),
+        "range",
     )
+    assert seeded[("reef_sw", "salt", "ammonia")][2] == "lower_better"
+    assert seeded[("planted_fw", "fresh", "nitrate")] == (
+        Decimal("5.0000"),
+        Decimal("50.0000"),
+        "range",
+    )
+    assert seeded[("brackish", "brackish", "nitrate")][2] == "lower_better"
+    assert seeded[("reef_sw", "salt", "salinity")][:2] == (
+        Decimal("34.0000"),
+        Decimal("36.0000"),
+    )
+    assert seeded[("coldwater_fw", "fresh", "ph")][:2] == (
+        Decimal("7.0000"),
+        Decimal("8.0000"),
+    )
+    assert seeded[("reef_sw", "salt", "temperature")][2] == "range"
 
 
 def test_seed_is_idempotent(app, db_session) -> None:
