@@ -35,9 +35,9 @@ def test_round_trip_ppt_sg_ppt_stable_to_two_decimals() -> None:
     original = Decimal("35.00")
     sg = ppt_to_sg(original)
     back = sg_to_ppt(sg)
-    # The 4-decimal canonical -> 4-decimal sg -> 4-decimal back path
-    # should round-trip stably to ~0.05 ppt.
-    assert abs(back - original) < Decimal("0.10")
+    # Pin known 4-decimal public-API quantization drift so precision changes fail.
+    assert back == Decimal("35.0515")
+    assert abs(back - original) == Decimal("0.0515")
 
 
 def test_ppt_sg_ppt_round_trip_stays_within_five_hundredths() -> None:
