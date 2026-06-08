@@ -212,28 +212,34 @@ def range_check(tank: Tank, parameter_type: ParameterType, value: Decimal) -> Ra
     if parameter_range is None:
         return "ok"
 
-    min_value = parameter_range.min_value
-    max_value = parameter_range.max_value
-    if value < min_value or value > max_value:
-        return "danger"
-
-    threshold = (max_value - min_value) * _CAUTION_BAND_RATIO
-    if value <= min_value + threshold or value >= max_value - threshold:
-        return "caution"
-
-    return "ok"
+    return _range_status_from_bounds(
+        value,
+        parameter_range.min_value,
+        parameter_range.max_value,
+        parameter_range.directionality,
+    )
 
 
 def _range_status_from_bounds(
     value: Decimal,
     min_value: Decimal,
     max_value: Decimal,
+    directionality: str,
 ) -> RangeStatus:
     """Compare a value against already-loaded advisory bounds."""
-    if value < min_value or value > max_value:
+    if value > max_value:
         return "danger"
 
     threshold = (max_value - min_value) * _CAUTION_BAND_RATIO
+    if directionality == "lower_better":
+        if value >= max_value - threshold:
+            return "caution"
+        return "ok"
+
+    # higher_better is reserved and intentionally falls through to the range path.
+    if value < min_value:
+        return "danger"
+
     if value <= min_value + threshold or value >= max_value - threshold:
         return "caution"
 
@@ -294,6 +300,7 @@ def display_rows_for_measurements(
                 measurement.value,
                 parameter_range.min_value,
                 parameter_range.max_value,
+                parameter_range.directionality,
             )
             if parameter_range is not None
             else "ok"

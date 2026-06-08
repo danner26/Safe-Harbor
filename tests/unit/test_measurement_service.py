@@ -70,6 +70,82 @@ def _seed_range(
     return parameter_range
 
 
+def test_lower_better_zero_reads_ok() -> None:
+    assert (
+        measurement_service._range_status_from_bounds(
+            Decimal("0.0"),
+            Decimal("0"),
+            Decimal("0.25"),
+            "lower_better",
+        )
+        == "ok"
+    )
+
+
+@pytest.mark.parametrize(
+    ("value", "expected_status"),
+    [
+        (Decimal("0.20"), "ok"),
+        (Decimal("0.225"), "caution"),
+        (Decimal("0.25"), "caution"),
+        (Decimal("0.26"), "danger"),
+    ],
+)
+def test_lower_better_range_status_from_bounds(value: Decimal, expected_status: str) -> None:
+    assert (
+        measurement_service._range_status_from_bounds(
+            value,
+            Decimal("0"),
+            Decimal("0.25"),
+            "lower_better",
+        )
+        == expected_status
+    )
+
+
+@pytest.mark.parametrize(
+    ("value", "expected_status"),
+    [
+        (Decimal("0"), "danger"),
+        (Decimal("5"), "caution"),
+        (Decimal("7"), "caution"),
+        (Decimal("25"), "ok"),
+        (Decimal("48"), "caution"),
+        (Decimal("50"), "caution"),
+        (Decimal("51"), "danger"),
+    ],
+)
+def test_range_positive_floor_status_from_bounds(value: Decimal, expected_status: str) -> None:
+    assert (
+        measurement_service._range_status_from_bounds(
+            value,
+            Decimal("5"),
+            Decimal("50"),
+            "range",
+        )
+        == expected_status
+    )
+
+
+@pytest.mark.parametrize(
+    ("value", "expected_status"),
+    [
+        (Decimal("22"), "caution"),
+        (Decimal("25"), "ok"),
+    ],
+)
+def test_range_symmetric_status_from_bounds(value: Decimal, expected_status: str) -> None:
+    assert (
+        measurement_service._range_status_from_bounds(
+            value,
+            Decimal("22"),
+            Decimal("28"),
+            "range",
+        )
+        == expected_status
+    )
+
+
 def test_range_check_value_in_middle_returns_ok(app, db_session) -> None:
     tank = _seed_tank(db_session)
     parameter_type = _seed_parameter_type(db_session)

@@ -330,6 +330,7 @@ def _compute_health_from_rows(
                 measurement.value,
                 parameter_range.min_value,
                 parameter_range.max_value,
+                parameter_range.directionality,
             )
             if range_status == "danger":
                 band = "unhealthy"

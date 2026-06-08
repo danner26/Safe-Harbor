@@ -7,7 +7,7 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 import pytest
-from sqlalchemy import event
+from sqlalchemy import event, select
 
 from safeharbor.extensions import db
 from safeharbor.models.parameter_type import ParameterType
@@ -28,11 +28,30 @@ def _seed_param(db_session, key: str, unit_code: str, dimension: str) -> Paramet
     return pt
 
 
-def _seed_tank(db_session, name: str = "Reef 90", water_type: str = "salt") -> Tank:
-    tank = Tank(name=name, water_type=water_type)
+def _seed_tank(
+    db_session,
+    name: str = "Reef 90",
+    water_type: str = "salt",
+    profile_key: str | None = None,
+) -> Tank:
+    kwargs = {"name": name, "water_type": water_type}
+    if profile_key is not None:
+        kwargs["profile_key"] = profile_key
+    tank = Tank(**kwargs)
     db_session.add(tank)
     db_session.flush()
     return tank
+
+
+def _seed_reference_data(app) -> None:
+    result = app.test_cli_runner().invoke(args=["safeharbor", "seed"])
+    assert result.exit_code == 0, result.output
+
+
+def _seeded_parameter(db_session, key: str) -> ParameterType:
+    parameter_type = db_session.scalar(select(ParameterType).where(ParameterType.key == key))
+    assert parameter_type is not None
+    return parameter_type
 
 
 def test_record_measurement_persists_canonical_value(app, db_session) -> None:
@@ -81,6 +100,43 @@ def test_record_measurement_unknown_value_unit_raises_without_inserting_unit(
         )
 
     assert db.session.query(Unit).count() == unit_count
+
+
+@pytest.mark.parametrize(
+    ("tank_name", "water_type", "profile_key", "parameter_key", "value", "expected_status"),
+    [
+        ("Reef Ammonia", "salt", "reef_sw", "ammonia", Decimal("0.0"), "ok"),
+        ("Planted Nitrate", "fresh", "planted_fw", "nitrate", Decimal("0.0"), "danger"),
+        (
+            "Community Nitrate",
+            "fresh",
+            "tropical_fw_community",
+            "nitrate",
+            Decimal("0.0"),
+            "ok",
+        ),
+    ],
+)
+def test_range_check_uses_seeded_profile_directionality(
+    app,
+    db_session,
+    tank_name: str,
+    water_type: str,
+    profile_key: str,
+    parameter_key: str,
+    value: Decimal,
+    expected_status: str,
+) -> None:
+    _seed_reference_data(app)
+    tank = _seed_tank(
+        db_session,
+        name=tank_name,
+        water_type=water_type,
+        profile_key=profile_key,
+    )
+    parameter_type = _seeded_parameter(db_session, parameter_key)
+
+    assert measurement_service.range_check(tank, parameter_type, value) == expected_status
 
 
 def test_latest_per_parameter_returns_dict(app, db_session) -> None:
