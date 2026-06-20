@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Daniel W. Anner", email = "daniel.anner@danstechsupport.com" }]
 dependencies = [
-    "bleach>=6.0",
+    "bleach>=6.4.0",
     "flask>=3.0",
     "flask-login>=0.6",
     "flask-wtf>=1.2",
