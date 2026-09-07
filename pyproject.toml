@@ -47,7 +47,7 @@ dev = [
     "playwright>=1.47",
     "pytest-playwright>=0.5",
     "pillow>=10.0",
-    "pixelmatch>=0.3",
+    "pixelmatch>=0.4.0",
 ]
 
 [build-system]
